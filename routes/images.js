@@ -30,7 +30,7 @@ router.post('/upload', upload.array('imagesToUpload'), async (req, res, next) =>
     if (!req.files || req.files.length === 0) {
         return res.status(400).json({ error: 'لم يتم رفع أي ملفات.' });
     }
-    
+
     const wasteTypes = Array.isArray(req.body.wasteTypes) ? req.body.wasteTypes : [req.body.wasteTypes];
 
     // No need to check length matching since we're handling it on the client side
@@ -86,12 +86,14 @@ router.post('/upload', upload.array('imagesToUpload'), async (req, res, next) =>
             const savedImage = await newImage.save();
             uploadedImageDocs.push(savedImage);
         }
-        res.status(200).json({ 
-            message: 'تم رفع الصور وتصنيفها بنجاح!', 
-            uploadedCount: uploadedImageDocs.length 
+        // Change from json to render success.ejs
+        res.render('success', {
+            message: `تم رفع وتصنيف ${uploadedImageDocs.length} صور بنجاح!`,
+            currentPage: 'success' // Pass currentPage for header highlighting
         });
     } catch (error) {
         console.error('Upload process error:', error);
+        // You might want to render an error page here too, or keep the JSON for API clients
         res.status(500).json({ error: `خطأ في عملية الرفع: ${error.message}` });
     }
 });

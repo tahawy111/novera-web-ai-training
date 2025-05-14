@@ -31,7 +31,28 @@
       padding: 1rem;
       text-align: center;
       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+      /* Animation */
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeIn 0.5s ease-out forwards;
     }
+
+    /* Delay animation for staggered effect */
+    .gallery-grid .gallery-item:nth-child(1) { animation-delay: 0.1s; }
+    .gallery-grid .gallery-item:nth-child(2) { animation-delay: 0.2s; }
+    .gallery-grid .gallery-item:nth-child(3) { animation-delay: 0.3s; }
+    .gallery-grid .gallery-item:nth-child(4) { animation-delay: 0.4s; }
+    .gallery-grid .gallery-item:nth-child(5) { animation-delay: 0.5s; }
+    .gallery-grid .gallery-item:nth-child(6) { animation-delay: 0.6s; }
+    /* Add more nth-child rules or use JavaScript for dynamic delay */
+
+    @keyframes fadeIn {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
     .gallery-item img {
       width: 100%;
       height: 200px;
@@ -48,7 +69,8 @@
       font-weight: bold;
     }
     .nav-links { margin-bottom: 2rem; text-align: center; }
-    .nav-links a { margin: 0 10px; color: #94d2bd; text-decoration: none; }
+    .nav-links a { margin: 0 10px; color: #94d2bd; text-decoration: none; display: inline-flex; align-items: center; }
+    .nav-links a i { margin-left: 5px; } /* Space between text and icon */
     .nav-links a:hover, .nav-links a.active { color: #00b4d8; /* --accent */ }
 
     /* أنماط للتصنيفات المختلفة */
@@ -57,6 +79,7 @@
         border-radius: 1rem;
         padding: 1rem;
         transition: all 0.3s ease;
+        margin-bottom: 1.5rem; /* Added margin */
     }
 
     details[data-type="paper"] {
@@ -78,16 +101,43 @@
         background: rgba(0, 150, 199, 0.1);
         border-left: 4px solid #0096c7;
     }
+     details[data-type="unknown"] { /* Style for unknown type */
+        background: rgba(108, 117, 125, 0.1);
+        border-left: 4px solid #6c757d;
+    }
 
     details summary {
         padding: 0.5rem 1rem;
         border-radius: 0.5rem;
         transition: all 0.3s ease;
+        cursor: pointer;
+        display: flex; /* Use flexbox for icon alignment */
+        align-items: center;
     }
+     details summary i {
+         margin-left: 10px; /* Space between icon and text */
+     }
 
     details summary:hover {
         background: rgba(255, 255, 255, 0.1);
     }
+
+     /* Animation for details content */
+     details[open] .gallery-grid {
+         animation: slideDown 0.5s ease-out;
+     }
+
+     @keyframes slideDown {
+         from {
+             opacity: 0;
+             transform: translateY(-10px);
+         }
+         to {
+             opacity: 1;
+             transform: translateY(0);
+         }
+     }
+
   </style>
 </head>
 <body>
@@ -95,8 +145,12 @@
     <div style="display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
       <img src="/logo.png" alt="Novera Logo" style="height: 40px; width: auto;">
       <nav class="nav-links" style="margin: 0;">
-        <a href="/upload" class="<%= currentPage === 'upload' ? 'active' : '' %>">رفع صور</a>
-        <a href="/gallery" class="<%= currentPage === 'gallery' ? 'active' : '' %>">المعرض</a>
+        <a href="/upload" class="<%= currentPage === 'upload' ? 'active' : '' %>">
+            <i class="fas fa-upload"></i> رفع صور
+        </a>
+        <a href="/gallery" class="<%= currentPage === 'gallery' ? 'active' : '' %>">
+            <i class="fas fa-images"></i> المعرض
+        </a>
       </nav>
     </div>
   </header>
@@ -122,25 +176,36 @@
           'mixed': 'مختلط',
           'unknown': 'غير مصنف' // Handle unknown type
         };
+
+        const typeIcons = { // Map types to Font Awesome icons
+            'paper': 'fas fa-file-alt',
+            'plastic': 'fas fa-bottle-water',
+            'metal': 'fas fa-wrench',
+            'mixed': 'fas fa-boxes-stacked',
+            'unknown': 'fas fa-question-circle'
+        };
       %>
 
       <% Object.keys(groupedImages).forEach(type => { %>
         <details class="mb-8" data-type="<%= type %>">
           <summary class="text-xl font-bold mb-4 cursor-pointer" style="color: #e9f5f9;">
+             <i class="<%= typeIcons[type] || typeIcons['unknown'] %>"></i>
             <%= typeNames[type] || type %>
-            <span class="text-sm opacity-70">(<%= groupedImages[type].length %> صور)</span>
+            <span class="text-sm opacity-70 mr-2">(<%= groupedImages[type].length %> صور)</span>
           </summary>
           <div class="gallery-grid mt-4">
             <% groupedImages[type].forEach(image => { %>
               <div class="gallery-item">
-                <img 
-                  src="<%= image.imgurUrl %>" 
+                <img
+                  src="<%= image.imgurUrl %>"
                   alt="Uploaded Waste Image - <%= image.wasteType %>"
                 >
                 <p>النوع: <span class="type">
+                   <i class="<%= typeIcons[image.wasteType] || typeIcons['unknown'] %> text-base"></i>
                   <%= typeNames[image.wasteType] || image.wasteType %>
                 </span></p>
                 <p style="font-size: 0.8rem; opacity: 0.7;">
+                  <i class="fas fa-calendar-alt text-sm"></i>
                   تاريخ الرفع: <%= (new Date(image.uploadedAt)).toLocaleString('ar-EG') %>
                 </p>
               </div>
@@ -149,7 +214,12 @@
         </details>
       <% }); %>
     <% } else { %>
-      <p class="text-center text-xl" style="color: #94d2bd;">لم يتم رفع أي صور بعد. <a href="/upload" style="color: #00b4d8;">قم برفع بعض الصور الآن!</a></p>
+      <p class="text-center text-xl" style="color: #94d2bd;">
+          لم يتم رفع أي صور بعد.
+          <a href="/upload" style="color: #00b4d8;" class="inline-flex items-center">
+              <i class="fas fa-arrow-right ml-2"></i> قم برفع بعض الصور الآن!
+          </a>
+      </p>
     <% } %>
   </div>
 </body>

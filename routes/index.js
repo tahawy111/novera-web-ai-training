@@ -30,9 +30,19 @@ router.get("/gallery", async (req, res) => {
     const images = await Image.find().sort({ uploadedAt: -1 });
     res.render("gallery", { images, currentPage: "gallery" });
   } catch (error) {
-    console.error("Error fetching images for gallery:", error);
-    res.status(500).send("Error loading gallery");
+    console.error('Error fetching images for gallery:', error);
+    // Render error page or handle differently
+    res.status(500).render('error', {
+      errorStatus: 500,
+      errorMessage: 'حدث خطأ أثناء تحميل المعرض.'
+    });
   }
+});
+
+// Success Page
+router.get("/success", (req, res) => {
+    const message = req.query.message || 'العملية تمت بنجاح.';
+    res.render("success", { message: message, currentPage: 'success' });
 });
 
 export default router;

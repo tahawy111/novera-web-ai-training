@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="theme-ocean-night">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نجاح - Novera</title>
+  <link rel="icon" href="/logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Alexandria', sans-serif;
+      background-color: #001219; /* from theme-ocean-night --bg-primary */
+      color: #e9f5f9; /* from theme-ocean-night --text-primary */
+      padding-top: 80px; /* Space for a fixed navbar if you add one */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      opacity: 0; /* Initial state for fade-in */
+      animation: fadeIn 0.5s ease-in-out forwards;
+    }
+
+    @keyframes fadeIn {
+        to { opacity: 1; }
+    }
+
+    .container { margin: 0 auto; padding: 1rem 2rem; max-width: 900px; width: 100%; }
+    .card-glass {
+      background-color: rgba(0, 95, 115, 0.3); /* --card-bg */
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem; /* rounded-xl */
+      padding: 2rem; /* Increased padding */
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); /* shadow-lg */
+      transform: translateY(20px); /* Initial state for slide-up */
+      opacity: 0; /* Initial state for fade-in */
+      animation: slideUpFadeIn 0.6s ease-out forwards;
+      animation-delay: 0.3s; /* Delay animation slightly */
+    }
+
+    @keyframes slideUpFadeIn {
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .btn-gradient {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background-image: linear-gradient(90deg, #00b4d8, #94d2bd); /* --gradient-start, --gradient-end */
+      color: #001219; /* --bg-primary for text color on gradient */
+      border: none;
+      padding: 0.75rem 2rem; /* Increased padding */
+      border-radius: 9999px; /* rounded-full */
+      font-weight: 700; /* Bolder font */
+      cursor: pointer;
+      transition: all 0.3s ease; /* Smooth transition for hover effects */
+      text-decoration: none; /* Remove underline from links */
+      font-size: 1.1rem; /* Slightly larger font */
+    }
+    .btn-gradient:hover {
+      transform: scale(1.05) translateY(-3px); /* More pronounced hover */
+      box-shadow: 0 8px 20px rgba(0, 180, 216, 0.5); /* Stronger shadow */
+    }
+     .btn-gradient:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .nav-links { margin-bottom: 2rem; text-align: center; }
+    .nav-links a { margin: 0 15px; color: #94d2bd; text-decoration: none; display: inline-flex; align-items: center; transition: color 0.3s ease; } /* Added transition */
+    .nav-links a i { margin-left: 8px; } /* Increased space */
+    .nav-links a:hover, .nav-links a.active { color: #00b4d8; /* --accent */ }
+
+    h1 {
+        color: #e9f5f9;
+        font-size: 3rem; /* Larger title */
+        margin-bottom: 1.5rem; /* Increased margin */
+        font-weight: 700; /* Bolder title */
+        opacity: 0; /* Initial state for animation */
+        transform: translateY(20px); /* Initial state for animation */
+        animation: slideUpFadeIn 0.6s ease-out forwards;
+        animation-delay: 0.7s; /* Delayed after card */
+    }
+    p {
+        color: #94d2bd;
+        font-size: 1.3rem; /* Larger message font */
+        margin-bottom: 2rem; /* Increased margin */
+        line-height: 1.6; /* Improved readability */
+        opacity: 0; /* Initial state for animation */
+        transform: translateY(20px); /* Initial state for animation */
+        animation: slideUpFadeIn 0.6s ease-out forwards;
+        animation-delay: 0.9s; /* Delayed after title */
+    }
+    .button-container {
+        display: flex;
+        gap: 1.5rem; /* Increased space between buttons */
+        justify-content: center;
+        flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+        margin-top: 1.5rem;
+    }
+
+    .success-icon {
+        color: #34d399; /* A vibrant green */
+        font-size: 4rem; /* Larger icon */
+        margin-bottom: 1rem;
+        animation: bounceIn 0.8s ease-out forwards; /* Bounce animation */
+        animation-delay: 0.5s; /* Delayed after card appears */
+        display: inline-block; /* Needed for transform */
+    }
+
+    @keyframes bounceIn {
+        0% { transform: scale(0.3); opacity: 0; }
+        50% { transform: scale(1.1); opacity: 1; }
+        70% { transform: scale(0.9); }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Animation for buttons */
+    .button-container a {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: slideUpFadeIn 0.6s ease-out forwards;
+    }
+    .button-container a:nth-child(1) { animation-delay: 1.1s; } /* Delay first button */
+    .button-container a:nth-child(2) { animation-delay: 1.3s; } /* Delay second button */
+
+  </style>
+</head>
+<body>
+  <header style="position: fixed; top: 0; left: 0; right: 0; background-color: rgba(0, 18, 25, 0.9); padding: 1rem; z-index: 50;">
+    <div style="display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
+      <img src="/logo.png" alt="Novera Logo" style="height: 40px; width: auto;">
+      <nav class="nav-links" style="margin: 0;">
+        <a href="/upload" class="<%= currentPage === 'upload' ? 'active' : '' %>"><i class="fas fa-upload ml-2"></i>رفع صور</a>
+        <a href="/gallery" class="<%= currentPage === 'gallery' ? 'active' : '' %>"><i class="fas fa-images ml-2"></i>المعرض</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="card-glass">
+      <i class="fas fa-check-circle success-icon"></i>
+      <h1>تمت العملية بنجاح!</h1>
+      <p><%= message %></p>
+      <div class="button-container">
+        <a href="/gallery" class="btn-gradient">
+            <i class="fas fa-images ml-2"></i> الذهاب إلى المعرض
+        </a>
+        <a href="/upload" class="btn-gradient">
+            <i class="fas fa-upload ml-2"></i> رفع صور أخرى
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
