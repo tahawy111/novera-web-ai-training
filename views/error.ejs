@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="theme-ocean-night">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>خطأ - Novera</title>
+  <link rel="icon" href="/logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Alexandria', sans-serif;
+      background-color: #001219; /* from theme-ocean-night --bg-primary */
+      color: #e9f5f9; /* from theme-ocean-night --text-primary */
+      padding-top: 80px; /* Space for a fixed navbar if you add one */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+    .container { margin: 0 auto; padding: 1rem 2rem; max-width: 900px; }
+    .card-glass {
+      background-color: rgba(0, 95, 115, 0.3); /* --card-bg */
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem; /* rounded-xl */
+      padding: 1.5rem; /* p-6 */
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); /* shadow-lg */
+    }
+    .nav-links { margin-bottom: 2rem; text-align: center; }
+    .nav-links a { margin: 0 10px; color: #94d2bd; text-decoration: none; }
+    .nav-links a:hover, .nav-links a.active { color: #00b4d8; /* --accent */ }
+    h1 {
+        color: #e9f5f9;
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    p {
+        color: #94d2bd;
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+    }
+    a {
+        color: #00b4d8;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header style="position: fixed; top: 0; left: 0; right: 0; background-color: rgba(0, 18, 25, 0.9); padding: 1rem; z-index: 50;">
+    <div style="display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
+      <img src="/logo.png" alt="Novera Logo" style="height: 40px; width: auto;">
+      <nav class="nav-links" style="margin: 0;">
+        <a href="/upload">رفع صور</a>
+        <a href="/gallery">المعرض</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="card-glass">
+      <h1>خطأ <%= errorStatus %></h1>
+      <p><%= errorMessage %></p>
+      <p><a href="/">العودة إلى الصفحة الرئيسية</a></p>
+    </div>
+  </div>
+</body>
+</html>

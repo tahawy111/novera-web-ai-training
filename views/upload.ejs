@@ -188,6 +188,7 @@
     const imagesToUploadInput = document.getElementById('imagesToUpload');
     const imagePreviewContainer = document.getElementById('imagePreviewContainer');
     const uploadForm = document.getElementById('uploadForm');
+    const submitButton = uploadForm.querySelector('button[type="submit"]'); // Get the submit button
 
     imagesToUploadInput.addEventListener('change', function(event) {
         imagePreviewContainer.innerHTML = ''; // Clear existing previews
@@ -250,7 +251,7 @@
                 select.classList.add('waste-type-select');
 
                 const options = [
-                    { value: "", text: "اختر النوع..." },
+                    { value: "", text: "اختر النوع..." }, // القيمة الفارغة ستكون الخيار الأول
                     { value: "paper", text: "ورق" },
                     { value: "plastic", text: "بلاستيك" },
                     { value: "metal", text: "معدن" },
@@ -261,7 +262,10 @@
                     const option = document.createElement('option');
                     option.value = opt.value;
                     option.textContent = opt.text;
-                    if (opt.value === "") option.disabled = true;
+                    if (opt.value === "") {
+                        option.disabled = true;  // تعطيل الخيار الفارغ
+                        option.selected = true;  // جعله محدداً افتراضياً
+                    }
                     select.appendChild(option);
                 });
 
@@ -277,15 +281,21 @@
         });
     });
 
-    uploadForm.addEventListener('submit', function(event) {
+    uploadForm.addEventListener('submit', async function(event) {
         event.preventDefault();
         
+        const previewItems = document.querySelectorAll('.image-preview-item');
+        if (previewItems.length === 0) {
+            alert('الرجاء اختيار صورة واحدة على الأقل');
+            return;
+        }
+
         const selects = document.querySelectorAll('.waste-type-select');
         let allSelected = true;
         
         selects.forEach(select => {
             if (!select.value) {
-                select.classList.add('border-red-500');
+                select.classList.add('border-red-500'); 
                 allSelected = false;
             } else {
                 select.classList.remove('border-red-500');
@@ -297,8 +307,46 @@
             return;
         }
 
-        // If all types are selected, submit the form
-        this.submit();
+        // Disable the submit button
+        submitButton.disabled = true;
+        submitButton.textContent = 'جاري الرفع...';
+
+        try {
+            const formData = new FormData();
+            
+            // Use Promise.all to handle async operations
+            await Promise.all(Array.from(previewItems).map(async (previewItem) => {
+                const img = previewItem.querySelector('img');
+                const select = previewItem.querySelector('select');
+                
+                // Get the original file from the data URL
+                const response = await fetch(img.src);
+                const blob = await response.blob();
+                const file = new File([blob], img.alt, { type: 'image/jpeg' });
+                
+                formData.append('imagesToUpload', file);
+                formData.append('wasteTypes', select.value);
+            }));
+
+            const response = await fetch(this.action, {
+                method: this.method,
+                body: formData
+            });
+
+            if (response.ok) {
+                alert('تم رفع الصور وتصنيفها بنجاح!');
+                window.location.href = '/gallery';
+            } else {
+                const errorData = await response.json();
+                alert(`حدث خطأ أثناء الرفع: ${errorData.error}`);
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+            alert(`حدث خطأ غير متوقع: ${error.message}`);
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'رفع وتصنيف الصور';
+        }
     });
   </script>
 </body>
