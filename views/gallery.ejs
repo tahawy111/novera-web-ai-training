@@ -54,7 +54,6 @@
 <body>
   <header style="position: fixed; top: 0; left: 0; right: 0; background-color: rgba(0, 18, 25, 0.9); padding: 1rem; z-index: 50; text-align: center;">
      <nav class="nav-links">
-        <a href="/" class="<%= currentPage === 'dashboard' ? 'active' : '' %>">لوحة التحكم</a>
         <a href="/upload" class="<%= currentPage === 'upload' ? 'active' : '' %>">رفع صور</a>
         <a href="/gallery" class="<%= currentPage === 'gallery' ? 'active' : '' %>">المعرض</a>
     </nav>
@@ -84,7 +83,7 @@
       %>
 
       <% Object.keys(groupedImages).forEach(type => { %>
-        <details open class="mb-8"> <%# Initially expanded %>
+        <details class="mb-8">
           <summary class="text-xl font-bold mb-4 cursor-pointer" style="color: #e9f5f9;">
             <%= typeNames[type] || type %>
           </summary>

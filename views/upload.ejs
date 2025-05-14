@@ -61,12 +61,36 @@
     .nav-links { margin-bottom: 2rem; text-align: center; }
     .nav-links a { margin: 0 10px; color: #94d2bd; text-decoration: none; }
     .nav-links a:hover, .nav-links a.active { color: #00b4d8; /* --accent */ }
+    .image-preview-item {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease-out;
+    }
+
+    .image-preview-item.fade-in {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .waste-type-select {
+        width: 100%;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        background-color: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #e9f5f9;
+        transition: all 0.3s ease;
+    }
+
+    .waste-type-select:focus {
+        border-color: #00b4d8;
+        outline: none;
+    }
   </style>
 </head>
 <body>
   <header style="position: fixed; top: 0; left: 0; right: 0; background-color: rgba(0, 18, 25, 0.9); padding: 1rem; z-index: 50; text-align: center;">
      <nav class="nav-links">
-        <a href="/" class="<%= currentPage === 'dashboard' ? 'active' : '' %>">لوحة التحكم</a>
         <a href="/upload" class="<%= currentPage === 'upload' ? 'active' : '' %>">رفع صور</a>
         <a href="/gallery" class="<%= currentPage === 'gallery' ? 'active' : '' %>">المعرض</a>
     </nav>
@@ -76,16 +100,32 @@
     <div class="card-glass">
       <h1 class="text-2xl font-bold mb-6 text-center" style="color: #e9f5f9;">رفع صور المخلفات</h1>
       <form action="/images/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
-        <div>
-          <label for="imagesToUpload">اختر الصور (يمكن تحديد أكثر من صورة):</label>
-          <input type="file" id="imagesToUpload" name="imagesToUpload" multiple accept="image/*" required>
+        <div class="mb-6">
+          <label for="imagesToUpload" class="block text-lg mb-2">اختر الصور (يمكن تحديد أكثر من صورة):</label>
+          <div class="relative">
+            <input 
+              type="file" 
+              id="imagesToUpload" 
+              name="imagesToUpload" 
+              multiple 
+              accept="image/*" 
+              required
+              class="w-full p-4 border-2 border-dashed border-[#94d2bd] rounded-lg cursor-pointer hover:border-[#00b4d8] transition-colors"
+            >
+            <p class="mt-2 text-sm text-[#94d2bd]">يمكنك اختيار عدة صور في نفس الوقت</p>
+          </div>
         </div>
 
         <div id="imagePreviewContainer" class="image-preview-container">
-          <!-- Image previews and type selectors will be injected here by JS -->
+          <!-- Image previews will be injected here -->
         </div>
 
-        <button type="submit" class="btn-gradient mt-6 w-full">رفع وتصنيف الصور</button>
+        <button 
+          type="submit" 
+          class="btn-gradient mt-6 w-full text-lg py-3 transition-transform hover:scale-105"
+        >
+          رفع وتصنيف الصور
+        </button>
       </form>
     </div>
   </div>
@@ -96,69 +136,92 @@
     const uploadForm = document.getElementById('uploadForm');
 
     imagesToUploadInput.addEventListener('change', function(event) {
-      imagePreviewContainer.innerHTML = ''; // Clear existing previews
-      const files = event.target.files;
+        imagePreviewContainer.innerHTML = ''; // Clear existing previews
+        const files = event.target.files;
 
-      if (files.length === 0) return;
+        if (files.length === 0) return;
 
-      Array.from(files).forEach((file, index) => {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const previewItem = document.createElement('div');
-          previewItem.classList.add('image-preview-item');
+        // Add counter for selected images
+        const counterDiv = document.createElement('div');
+        counterDiv.classList.add('text-center', 'mb-4');
+        counterDiv.innerHTML = `<p class="text-[#94d2bd]">تم اختيار ${files.length} صور</p>`;
+        imagePreviewContainer.appendChild(counterDiv);
 
-          const img = document.createElement('img');
-          img.src = e.target.result;
-          previewItem.appendChild(img);
+        Array.from(files).forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewItem = document.createElement('div');
+                previewItem.classList.add('image-preview-item');
 
-          const selectLabel = document.createElement('label');
-          selectLabel.textContent = `نوع الصورة ${index + 1}:`;
-          selectLabel.htmlFor = `wasteType_${index}`;
-          previewItem.appendChild(selectLabel);
+                // Add file name
+                const fileName = document.createElement('p');
+                fileName.textContent = file.name;
+                fileName.classList.add('text-sm', 'mb-2', 'text-[#94d2bd]');
+                previewItem.appendChild(fileName);
 
-          const select = document.createElement('select');
-          select.name = 'wasteTypes'; // All selects will have the same name to form an array
-          select.id = `wasteType_${index}`;
-          select.required = true;
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.alt = file.name;
+                previewItem.appendChild(img);
 
-          const options = [
-            { value: "", text: "اختر النوع..." },
-            { value: "paper", text: "ورق" },
-            { value: "plastic", text: "بلاستيك" },
-            { value: "metal", text: "معدن" },
-            { value: "mixed", text: "مختلط" }
-          ];
+                const selectLabel = document.createElement('label');
+                selectLabel.textContent = `نوع المخلفات:`;
+                selectLabel.classList.add('block', 'mt-2', 'mb-1');
+                previewItem.appendChild(selectLabel);
 
-          options.forEach(opt => {
-            const optionElement = document.createElement('option');
-            optionElement.value = opt.value;
-            optionElement.textContent = opt.text;
-            if (opt.value === "") optionElement.disabled = true; // Make "اختر النوع" not selectable
-            select.appendChild(optionElement);
-          });
-          select.value = ""; // Set initial value to the disabled option
+                const select = document.createElement('select');
+                select.name = 'wasteTypes';
+                select.required = true;
+                select.classList.add('waste-type-select');
 
-          previewItem.appendChild(select);
-          imagePreviewContainer.appendChild(previewItem);
-        }
-        reader.readAsDataURL(file);
-      });
+                const options = [
+                    { value: "", text: "اختر النوع..." },
+                    { value: "paper", text: "ورق" },
+                    { value: "plastic", text: "بلاستيك" },
+                    { value: "metal", text: "معدن" },
+                    { value: "mixed", text: "مختلط" }
+                ];
+
+                options.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt.value;
+                    option.textContent = opt.text;
+                    if (opt.value === "") option.disabled = true;
+                    select.appendChild(option);
+                });
+
+                previewItem.appendChild(select);
+                imagePreviewContainer.appendChild(previewItem);
+
+                // Add animation class
+                setTimeout(() => previewItem.classList.add('fade-in'), 0);
+            }
+            reader.readAsDataURL(file);
+        });
     });
 
     uploadForm.addEventListener('submit', function(event) {
-        const selects = imagePreviewContainer.querySelectorAll('select[name="wasteTypes"]');
+        event.preventDefault();
+        
+        const selects = document.querySelectorAll('.waste-type-select');
         let allSelected = true;
+        
         selects.forEach(select => {
             if (!select.value) {
+                select.classList.add('border-red-500');
                 allSelected = false;
+            } else {
+                select.classList.remove('border-red-500');
             }
         });
 
         if (!allSelected) {
-            event.preventDefault(); // Prevent form submission
-            alert('الرجاء تحديد نوع لكل صورة قبل الرفع.');
+            alert('الرجاء تحديد نوع لكل صورة قبل الرفع');
+            return;
         }
-        // The backend will also validate this
+
+        // If all types are selected, submit the form
+        this.submit();
     });
   </script>
 </body>
