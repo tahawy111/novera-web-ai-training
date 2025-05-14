@@ -18,6 +18,7 @@ const imageSchema = new mongoose.Schema({
   }
 });
 
-const Image = mongoose.model('Image', imageSchema);
+// Check if the model already exists before compiling it
+const Image = mongoose.models.Image || mongoose.model('Image', imageSchema);
 
 export default Image;

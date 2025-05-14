@@ -36,30 +36,36 @@ app.use('/', indexRoutes);
 app.use('/images', imageRoutes);
 
 // Catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   const err = new Error('الصفحة غير موجودة');
   err.status = 404;
   next(err);
 });
 
 // Error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // Set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // Render the error page
-  res.status(err.status || 500);
-  res.render('error', {
-    errorStatus: err.status || 500,
-    errorMessage: err.message || 'حدث خطأ غير متوقع'
-  });
-});
+  // Determine response format based on request path
+  const isApiRequest = req.originalUrl.startsWith('/images/'); // Assuming /images/ routes are API routes
 
-// Basic Error Handling
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
+  res.status(err.status || 500);
+
+  if (isApiRequest) {
+    // Send JSON response for API errors
+    res.json({
+      error: err.message || 'An unexpected API error occurred',
+      status: err.status || 500
+    });
+  } else {
+    // Render the error page for regular page requests
+    res.render('error', {
+      errorStatus: err.status || 500,
+      errorMessage: err.message || 'حدث خطأ غير متوقع'
+    });
+  }
 });
 
 app.listen(PORT, () => {

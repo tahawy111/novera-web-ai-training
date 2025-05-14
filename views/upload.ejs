@@ -1,451 +1,561 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="theme-ocean-night"> <!-- Or dynamically set theme -->
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>رفع صور النفايات - Novera</title>
-  <link rel="icon" href="/logo.png"> <!-- Assuming logo.png is in public/ -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <style>
-    /* Basic styling to match userdash.ejs somewhat - you'd ideally share CSS */
-    body {
-      font-family: 'Alexandria', sans-serif;
-      background-color: #001219; /* from theme-ocean-night --bg-primary */
-      color: #e9f5f9; /* from theme-ocean-night --text-primary */
-      padding-top: 80px; /* Space for a fixed navbar if you add one */
-      min-height: 100vh; /* Ensure body takes at least full viewport height */
-      background-image: radial-gradient(circle at top left, rgba(0, 180, 216, 0.1), transparent 50%),
-                        radial-gradient(circle at bottom right, rgba(148, 210, 189, 0.1), transparent 50%);
-      background-size: cover;
-      background-repeat: no-repeat;
-    }
-    .container { margin: 0 auto; padding: 1rem 2rem; max-width: 900px; }
-    .card-glass {
-      background-color: rgba(0, 95, 115, 0.3); /* --card-bg */
-      backdrop-filter: blur(15px); /* Increased blur */
-      border: 1px solid rgba(255, 255, 255, 0.15); /* Slightly more visible border */
-      border-radius: 1rem; /* Slightly larger radius */
-      padding: 2rem; /* Increased padding */
-      box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37); /* More prominent shadow */
-    }
-    .btn-gradient {
-      background-image: linear-gradient(90deg, #00b4d8, #94d2bd); /* --gradient-start, --gradient-end */
-      color: #001219; /* --bg-primary for text color on gradient */
-      border: none;
-      padding: 0.75rem 2rem; /* Increased padding */
-      border-radius: 9999px; /* rounded-full */
-      font-weight: 700; /* Bolder text */
-      cursor: pointer;
-      display: flex; /* Use flexbox for icon and text */
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem; /* Space between icon and text */
-      transition: all 0.3s ease; /* Smoother transition */
-    }
-    .btn-gradient:hover {
-      transform: scale(1.02) translateY(-2px); /* Subtle lift and scale */
-      box-shadow: 0 4px 15px rgba(0, 180, 216, 0.4); /* Add shadow on hover */
-    }
-     .btn-gradient:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-    }
-    label { display: block; margin-bottom: 0.5rem; color: #94d2bd; /* --text-secondary */ font-weight: 600;}
-    input[type="file"], select {
-        background-color: rgba(255, 255, 255, 0.1); /* --input-bg */
-        border: 1px solid rgba(255, 255, 255, 0.2); /* --input-border */
-        color: #e9f5f9; /* --input-text */
-        padding: 0.75rem;
-        border-radius: 0.5rem;
-        width: 100%;
-        margin-bottom: 1rem;
-        transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-     input[type="file"]:focus, select:focus {
-        border-color: #00b4d8;
-        box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.3);
-        outline: none;
-    }
-    .file-input-wrapper {
-        position: relative;
-        overflow: hidden;
-        display: inline-block;
-        width: 100%;
-    }
-    .file-input-wrapper input[type="file"] {
-        position: absolute;
-        left: 0;
-        top: 0;
-        opacity: 0;
-        cursor: pointer;
-        height: 100%;
-    }
-    .file-input-custom {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 1rem;
-        border: 2px dashed #94d2bd;
-        border-radius: 0.75rem;
-        background-color: rgba(0, 95, 115, 0.2);
-        color: #e9f5f9;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    .file-input-custom:hover {
-        border-color: #00b4d8;
-        background-color: rgba(0, 95, 115, 0.3);
-    }
-    .file-input-custom i {
-        margin-left: 0.75rem;
-        color: #00b4d8;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رفع صور النفايات - Novera</title>
+    <link rel="icon" href="/logo.png"> <!-- Assuming logo.png is in public/ -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* Basic styling to match userdash.ejs somewhat - you'd ideally share CSS */
+        body {
+            font-family: 'Alexandria', sans-serif;
+            background-color: #001219;
+            /* from theme-ocean-night --bg-primary */
+            color: #e9f5f9;
+            /* from theme-ocean-night --text-primary */
+            padding-top: 80px;
+            /* Space for a fixed navbar if you add one */
+            min-height: 100vh;
+            /* Ensure body takes at least full viewport height */
+            background-image: radial-gradient(circle at top left, rgba(0, 180, 216, 0.1), transparent 50%),
+                radial-gradient(circle at bottom right, rgba(148, 210, 189, 0.1), transparent 50%);
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
 
-    .image-preview-container {
-        margin-top: 1.5rem;
-        display: flex;
-        flex-direction: column; /* جعل العناصر تظهر في عمود */
-    }
-    .images-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 1.5rem; /* Increased gap */
-        width: 100%;
-    }
-    .image-preview-item {
-      border: 1px solid #005f73; /* --border-color */
-      padding: 0.75rem; /* Increased padding */
-      border-radius: 0.75rem; /* Increased radius */
-      text-align: center;
-      position: relative; /* لوضع زر X بشكل صحيح */
-      background-color: rgba(0, 95, 115, 0.2); /* Subtle background */
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-    .image-preview-item img { max-width: 100%; height: 120px; object-fit: cover; margin-bottom: 0.75rem; border-radius: 0.5rem; border: 1px solid rgba(148, 210, 189, 0.3);}
-    .image-preview-item select { font-size: 0.9rem; padding: 0.5rem; margin-top: 0.5rem; }
-    .nav-links { margin-bottom: 2rem; text-align: center; }
-    .nav-links a { margin: 0 10px; color: #94d2bd; text-decoration: none; transition: color 0.3s ease; }
-    .nav-links a:hover, .nav-links a.active { color: #00b4d8; /* --accent */ }
-    .image-preview-item {
-        opacity: 0;
-        transform: translateY(20px);
-        transition: all 0.4s ease-out; /* Slightly slower animation */
-    }
+        .container {
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            max-width: 900px;
+        }
 
-    .image-preview-item.fade-in {
-        opacity: 1;
-        transform: translateY(0);
-    }
+        .card-glass {
+            background-color: rgba(0, 95, 115, 0.3);
+            /* --card-bg */
+            backdrop-filter: blur(15px);
+            /* Increased blur */
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            /* Slightly more visible border */
+            border-radius: 1rem;
+            /* Slightly larger radius */
+            padding: 2rem;
+            /* Increased padding */
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            /* More prominent shadow */
+        }
 
-    .remove-image {
-        position: absolute;
-        top: -10px; /* Adjusted position */
-        right: -10px; /* Adjusted position */
-        background: #ef4444; /* Red color for remove */
-        color: white;
-        width: 28px; /* Larger button */
-        height: 28px; /* Larger button */
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        font-weight: bold;
-        border: 2px solid #001219;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        z-index: 10; /* Ensure it's above the image */
-    }
+        .btn-gradient {
+            background-image: linear-gradient(90deg, #00b4d8, #94d2bd);
+            /* --gradient-start, --gradient-end */
+            color: #001219;
+            /* --bg-primary for text color on gradient */
+            border: none;
+            padding: 0.75rem 2rem;
+            /* Increased padding */
+            border-radius: 9999px;
+            /* rounded-full */
+            font-weight: 700;
+            /* Bolder text */
+            cursor: pointer;
+            display: flex;
+            /* Use flexbox for icon and text */
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            /* Space between icon and text */
+            transition: all 0.3s ease;
+            /* Smoother transition */
+        }
 
-    .remove-image:hover {
-        transform: scale(1.1);
-        background: #dc2626; /* Darker red on hover */
-    }
+        .btn-gradient:hover {
+            transform: scale(1.02) translateY(-2px);
+            /* Subtle lift and scale */
+            box-shadow: 0 4px 15px rgba(0, 180, 216, 0.4);
+            /* Add shadow on hover */
+        }
 
-    .waste-type-select {
-        width: 100%;
-        padding: 0.6rem; /* Adjusted padding */
-        border-radius: 0.5rem;
-        background-color: rgba(0, 95, 115, 0.4); /* Slightly darker glass */
-        border: 1px solid rgba(148, 210, 189, 0.4); /* Slightly more visible border */
-        color: #e9f5f9;
-        transition: all 0.3s ease;
-        font-size: 0.95rem; /* Slightly larger font */
-        cursor: pointer;
-        appearance: none; /* Remove default arrow */
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394d2bd'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3E%3C/svg%3E"); /* Custom arrow */
-        background-repeat: no-repeat;
-        background-position: left 0.75rem center; /* Position arrow on the left */
-        background-size: 1.5em auto; /* Size of the arrow */
-        padding-left: 2.5rem; /* Make space for the arrow */
-    }
+        .btn-gradient:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
 
-    .waste-type-select:hover {
-        border-color: #94d2bd;
-    }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #94d2bd;
+            /* --text-secondary */
+            font-weight: 600;
+        }
 
-    .waste-type-select:focus {
-        border-color: #00b4d8;
-        box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.3);
-        outline: none;
-    }
+        input[type="file"],
+        select {
+            background-color: rgba(255, 255, 255, 0.1);
+            /* --input-bg */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            /* --input-border */
+            color: #e9f5f9;
+            /* --input-text */
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            width: 100%;
+            margin-bottom: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
 
-    .waste-type-select option {
-        background-color: #001219;
-        color: #e9f5f9;
-    }
+        input[type="file"]:focus,
+        select:focus {
+            border-color: #00b4d8;
+            box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.3);
+            outline: none;
+        }
 
-    /* Style for invalid select */
-    .waste-type-select.invalid {
-        border-color: #ef4444; /* Red border */
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3); /* Red shadow */
-    }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
 
-    .counter-text {
-        color: #94d2bd;
-        font-size: 1rem;
-        margin-bottom: 1rem;
-        text-align: center;
-    }
-  </style>
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            height: 100%;
+        }
+
+        .file-input-custom {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            border: 2px dashed #94d2bd;
+            border-radius: 0.75rem;
+            background-color: rgba(0, 95, 115, 0.2);
+            color: #e9f5f9;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-custom:hover {
+            border-color: #00b4d8;
+            background-color: rgba(0, 95, 115, 0.3);
+        }
+
+        .file-input-custom i {
+            margin-left: 0.75rem;
+            color: #00b4d8;
+        }
+
+        .image-preview-container {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            /* جعل العناصر تظهر في عمود */
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1.5rem;
+            /* Increased gap */
+            width: 100%;
+        }
+
+        .image-preview-item {
+            border: 1px solid #005f73;
+            /* --border-color */
+            padding: 0.75rem;
+            /* Increased padding */
+            border-radius: 0.75rem;
+            /* Increased radius */
+            text-align: center;
+            position: relative;
+            /* لوضع زر X بشكل صحيح */
+            background-color: rgba(0, 95, 115, 0.2);
+            /* Subtle background */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .image-preview-item img {
+            max-width: 100%;
+            height: 120px;
+            object-fit: cover;
+            margin-bottom: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(148, 210, 189, 0.3);
+        }
+
+        .image-preview-item select {
+            font-size: 0.9rem;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .nav-links {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .nav-links a {
+            margin: 0 10px;
+            color: #94d2bd;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #00b4d8;
+            /* --accent */
+        }
+
+        .image-preview-item {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s ease-out;
+            /* Slightly slower animation */
+        }
+
+        .image-preview-item.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .remove-image {
+            position: absolute;
+            top: -10px;
+            /* Adjusted position */
+            right: -10px;
+            /* Adjusted position */
+            background: #ef4444;
+            /* Red color for remove */
+            color: white;
+            width: 28px;
+            /* Larger button */
+            height: 28px;
+            /* Larger button */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            border: 2px solid #001219;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+            /* Ensure it's above the image */
+        }
+
+        .remove-image:hover {
+            transform: scale(1.1);
+            background: #dc2626;
+            /* Darker red on hover */
+        }
+
+        .waste-type-select {
+            width: 100%;
+            padding: 0.6rem;
+            /* Adjusted padding */
+            border-radius: 0.5rem;
+            background-color: rgba(0, 95, 115, 0.4);
+            /* Slightly darker glass */
+            border: 1px solid rgba(148, 210, 189, 0.4);
+            /* Slightly more visible border */
+            color: #e9f5f9;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            /* Slightly larger font */
+            cursor: pointer;
+            appearance: none;
+            /* Remove default arrow */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394d2bd'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3E%3C/svg%3E");
+            /* Custom arrow */
+            background-repeat: no-repeat;
+            background-position: left 0.75rem center;
+            /* Position arrow on the left */
+            background-size: 1.5em auto;
+            /* Size of the arrow */
+            padding-left: 2.5rem;
+            /* Make space for the arrow */
+        }
+
+        .waste-type-select:hover {
+            border-color: #94d2bd;
+        }
+
+        .waste-type-select:focus {
+            border-color: #00b4d8;
+            box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.3);
+            outline: none;
+        }
+
+        .waste-type-select option {
+            background-color: #001219;
+            color: #e9f5f9;
+        }
+
+        /* Style for invalid select */
+        .waste-type-select.invalid {
+            border-color: #ef4444;
+            /* Red border */
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3);
+            /* Red shadow */
+        }
+
+        .counter-text {
+            color: #94d2bd;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+    </style>
 </head>
+
 <body>
-  <header style="position: fixed; top: 0; left: 0; right: 0; background-color: rgba(0, 18, 25, 0.9); padding: 1rem; z-index: 50; backdrop-filter: blur(5px);">
-    <div style="display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
-      <img src="/logo.png" alt="Novera Logo" style="height: 40px; width: auto;">
-      <nav class="nav-links" style="margin: 0;">
-        <a href="/upload" class="<%= currentPage === 'upload' ? 'active' : '' %>"><i class="fas fa-upload ml-2"></i>رفع صور</a>
-        <a href="/gallery" class="<%= currentPage === 'gallery' ? 'active' : '' %>"><i class="fas fa-images ml-2"></i>المعرض</a>
-      </nav>
-    </div>
-  </header>
-
-  <div class="container">
-    <div class="card-glass">
-      <h1 class="text-2xl font-bold mb-8 text-center" style="color: #e9f5f9;">رفع صور المخلفات</h1>
-      <form action="/images/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
-        <div class="mb-6">
-          <label for="imagesToUpload" class="block text-lg mb-2">اختر الصور (يمكن تحديد أكثر من صورة):</label>
-          <div class="file-input-wrapper">
-            <input
-              type="file"
-              id="imagesToUpload"
-              name="imagesToUpload"
-              multiple
-              accept="image/*"
-              required
-            >
-            <div class="file-input-custom">
-                <i class="fas fa-cloud-upload-alt text-2xl"></i>
-                <span>اسحب وأفلت الصور هنا أو انقر للاختيار</span>
-            </div>
-          </div>
-          <p class="mt-2 text-sm text-[#94d2bd] text-center">يمكنك اختيار عدة صور في نفس الوقت</p>
+    <header
+        style="position: fixed; top: 0; left: 0; right: 0; background-color: rgba(0, 18, 25, 0.9); padding: 1rem; z-index: 50; backdrop-filter: blur(5px);">
+        <div
+            style="display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
+            <img src="/logo.png" alt="Novera Logo" style="height: 40px; width: auto;">
+            <nav class="nav-links" style="margin: 0;">
+                <a href="/upload" class="<%= currentPage === 'upload' ? 'active' : '' %>"><i
+                        class="fas fa-upload ml-2"></i>رفع صور</a>
+                <a href="/gallery" class="<%= currentPage === 'gallery' ? 'active' : '' %>"><i
+                        class="fas fa-images ml-2"></i>المعرض</a>
+            </nav>
         </div>
+    </header>
 
-        <div id="imagePreviewContainer" class="image-preview-container">
-          <!-- Image previews will be injected here -->
+    <div class="container">
+        <div class="card-glass">
+            <h1 class="text-2xl font-bold mb-8 text-center" style="color: #e9f5f9;">رفع صور المخلفات</h1>
+            <form action="/images/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
+                <div class="mb-6">
+                    <label for="imagesToUpload" class="block text-lg mb-2">اختر الصور (يمكن تحديد أكثر من صورة):</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="imagesToUpload" name="imagesToUpload" multiple accept="image/*">
+                        <div class="file-input-custom">
+                            <i class="fas fa-cloud-upload-alt text-2xl"></i>
+                            <span>اسحب وأفلت الصور هنا أو انقر للاختيار</span>
+                        </div>
+                    </div>
+                    <p class="mt-2 text-sm text-[#94d2bd] text-center">يمكنك اختيار عدة صور في نفس الوقت</p>
+                </div>
+
+                <div id="imagePreviewContainer" class="image-preview-container">
+                    <!-- Image previews will be injected here -->
+                </div>
+
+                <button type="submit"
+                    class="btn-gradient mt-8 w-full text-lg py-3 transition-transform hover:scale-105">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>رفع وتصنيف الصور</span>
+                </button>
+            </form>
         </div>
-
-        <button
-          type="submit"
-          class="btn-gradient mt-8 w-full text-lg py-3 transition-transform hover:scale-105"
-        >
-          <i class="fas fa-paper-plane"></i>
-          <span>رفع وتصنيف الصور</span>
-        </button>
-      </form>
     </div>
-  </div>
 
-  <script>
-    const imagesToUploadInput = document.getElementById('imagesToUpload');
-    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
-    const uploadForm = document.getElementById('uploadForm');
-    const submitButton = uploadForm.querySelector('button[type="submit"]'); // Get the submit button
+    <script>
+        const imagesToUploadInput = document.getElementById('imagesToUpload');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        const uploadForm = document.getElementById('uploadForm');
+        const submitButton = uploadForm.querySelector('button[type="submit"]'); // Get the submit button
 
-    imagesToUploadInput.addEventListener('change', function(event) {
-        imagePreviewContainer.innerHTML = ''; // Clear existing previews
-        const files = event.target.files;
+        let selectedFiles = []; // Array to hold all selected files
 
-        if (files.length === 0) return;
+        // Function to render the image previews based on the selectedFiles array
+        function renderPreviews() {
+            imagePreviewContainer.innerHTML = ''; // Clear existing previews
 
-        // Add counter for selected images
-        const counterDiv = document.createElement('div');
-        counterDiv.classList.add('counter-text');
-        counterDiv.innerHTML = `<p>تم اختيار ${files.length} صور</p>`;
-        imagePreviewContainer.appendChild(counterDiv);
-
-        // Create grid container for images
-        const gridContainer = document.createElement('div');
-        gridContainer.classList.add('images-grid');
-        imagePreviewContainer.appendChild(gridContainer);
-
-        Array.from(files).forEach((file, index) => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const previewItem = document.createElement('div');
-                previewItem.classList.add('image-preview-item');
-
-                // إضافة زر X
-                const removeButton = document.createElement('div');
-                removeButton.classList.add('remove-image');
-                removeButton.innerHTML = '<i class="fas fa-times"></i>'; // Use Font Awesome icon
-                removeButton.onclick = function() {
-                    previewItem.classList.remove('fade-in');
-                    setTimeout(() => {
-                        previewItem.remove();
-                        // تحديث عداد الصور
-                        const remainingImages = document.querySelectorAll('.image-preview-item').length;
-                        const counterDiv = document.querySelector('.counter-text'); // Select by class
-                        if (counterDiv) {
-                            if (remainingImages > 0) {
-                                counterDiv.innerHTML = `<p>تم اختيار ${remainingImages} صور</p>`;
-                            } else {
-                                imagePreviewContainer.innerHTML = ''; // Clear container if no images left
-                            }
-                        }
-                         // Re-enable file input if no images are selected
-                        if (remainingImages === 0) {
-                            imagesToUploadInput.value = ''; // Clear the file input
-                        }
-                    }, 300);
-                };
-                previewItem.appendChild(removeButton);
-
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.alt = file.name;
-                previewItem.appendChild(img);
-
-                const selectLabel = document.createElement('label');
-                selectLabel.textContent = `نوع المخلفات:`;
-                selectLabel.classList.add('block', 'mt-2', 'mb-1');
-                previewItem.appendChild(selectLabel);
-
-                const select = document.createElement('select');
-                select.name = 'wasteTypes';
-                select.required = true;
-                select.classList.add('waste-type-select');
-
-                const options = [
-                    { value: "", text: "اختر النوع..." },
-                    { value: "paper", text: "ورق" },
-                    { value: "plastic", text: "بلاستيك" },
-                    { value: "metal", text: "معدن" },
-                    { value: "mixed", text: "مختلط" }
-                ];
-
-                options.forEach(opt => {
-                    const option = document.createElement('option');
-                    option.value = opt.value;
-                    option.textContent = opt.text;
-                    if (opt.value === "") option.disabled = true;
-                    select.appendChild(option);
-                });
-
-                previewItem.appendChild(select);
-
-                // Append to gridContainer instead of imagePreviewContainer
-                gridContainer.appendChild(previewItem);
-
-                // Add animation class
-                setTimeout(() => previewItem.classList.add('fade-in'), 50 * index); // Stagger animation
+            if (selectedFiles.length === 0) {
+                // Optionally hide the container or show a message if no files are selected
+                return;
             }
-            reader.readAsDataURL(file);
-        });
-    });
 
-    uploadForm.addEventListener('submit', async function(event) {
-        event.preventDefault();
+            // Add counter for selected images
+            const counterDiv = document.createElement('div');
+            counterDiv.classList.add('counter-text');
+            counterDiv.innerHTML = `<p>تم اختيار ${selectedFiles.length} صور</p>`;
+            imagePreviewContainer.appendChild(counterDiv);
 
-        const previewItems = document.querySelectorAll('.image-preview-item');
-        if (previewItems.length === 0) {
-            alert('الرجاء اختيار صورة واحدة على الأقل');
-            return;
+            // Create grid container for images
+            const gridContainer = document.createElement('div');
+            gridContainer.classList.add('images-grid');
+            imagePreviewContainer.appendChild(gridContainer);
+
+            selectedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const previewItem = document.createElement('div');
+                    previewItem.classList.add('image-preview-item');
+
+                    // إضافة زر X
+                    const removeButton = document.createElement('div');
+                    removeButton.classList.add('remove-image');
+                    removeButton.innerHTML = '<i class="fas fa-times"></i>'; // Use Font Awesome icon
+                    removeButton.onclick = function () {
+                        // Remove the file from the selectedFiles array using its index
+                        selectedFiles.splice(index, 1);
+                        // Re-render the previews to update the display and counter
+                        renderPreviews();
+                        // Clear the file input value if no images are left
+                        if (selectedFiles.length === 0) {
+                            imagesToUploadInput.value = '';
+                        }
+                    };
+                    previewItem.appendChild(removeButton);
+
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.alt = file.name;
+                    previewItem.appendChild(img);
+
+                    const selectLabel = document.createElement('label');
+                    selectLabel.textContent = `نوع المخلفات:`;
+                    selectLabel.classList.add('block', 'mt-2', 'mb-1');
+                    previewItem.appendChild(selectLabel);
+
+                    const select = document.createElement('select');
+                    select.name = 'wasteTypes'; // Keep the name for form submission
+                    select.required = true;
+                    select.classList.add('waste-type-select');
+                    // Store the index on the select element to link it back to the file
+                    select.dataset.index = index;
+
+                    const options = [
+                        { value: "", text: "اختر النوع..." },
+                        { value: "paper", text: "ورق" },
+                        { value: "plastic", text: "بلاستيك" },
+                        { value: "metal", text: "معدن" },
+                        { value: "mixed", text: "مختلط" }
+                    ];
+
+                    options.forEach(opt => {
+                        const option = document.createElement('option');
+                        option.value = opt.value;
+                        option.textContent = opt.text;
+                        if (opt.value === "") {
+                            option.disabled = true;
+                            option.selected = true; // Make the empty option selected by default
+                        }
+                        select.appendChild(option);
+                    });
+
+                    previewItem.appendChild(select);
+
+                    // Append to gridContainer
+                    gridContainer.appendChild(previewItem);
+
+                    // Add animation class
+                    setTimeout(() => previewItem.classList.add('fade-in'), 50 * index); // Stagger animation
+                }
+                reader.readAsDataURL(file);
+            });
         }
 
-        const selects = document.querySelectorAll('.waste-type-select');
-        let allSelected = true;
 
-        selects.forEach(select => {
-            if (!select.value) {
-                select.classList.add('invalid'); // Add invalid class
-                allSelected = false;
-            } else {
-                select.classList.remove('invalid'); // Remove invalid class
-            }
-        });
+        imagesToUploadInput.addEventListener('change', function (event) {
+            const files = event.target.files;
 
-        if (!allSelected) {
-            alert('الرجاء تحديد نوع لكل صورة قبل الرفع');
-            return;
-        }
+            if (files.length === 0) return;
 
-        // Disable the submit button
-        submitButton.disabled = true;
-        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin ml-2"></i><span>جاري الرفع...</span>'; // Add loading spinner
-
-        try {
-            const formData = new FormData();
-
-            // Use Promise.all to handle async operations
-            await Promise.all(Array.from(previewItems).map(async (previewItem) => {
-                const img = previewItem.querySelector('img');
-                const select = previewItem.querySelector('select');
-
-                // Get the original file from the data URL
-                // This approach might lose some file metadata (like original filename/type)
-                // A better approach for large files might be to store the original File objects
-                // but for simplicity and preview, this is acceptable.
-                const response = await fetch(img.src);
-                const blob = await response.blob();
-                // Try to preserve original file extension if possible, default to jpeg
-                const originalFile = Array.from(imagesToUploadInput.files).find(f => {
-                    const reader = new FileReader();
-                    let match = false;
-                    reader.onloadend = () => {
-                        if (reader.result === img.src) match = true;
-                    }
-                    reader.readAsDataURL(f);
-                     // This is a bit hacky and might not work perfectly.
-                     // A more robust solution would store file objects directly.
-                     // For now, rely on img.alt (filename) and guess type or default.
-                     return f.name === img.alt;
-                }) || { name: img.alt, type: 'image/jpeg' }; // Fallback
-
-                const file = new File([blob], originalFile.name, { type: originalFile.type });
-
-                formData.append('imagesToUpload', file);
-                formData.append('wasteTypes', select.value);
-            }));
-
-            const response = await fetch(this.action, {
-                method: this.method,
-                body: formData
+            // Add newly selected files to the selectedFiles array
+            Array.from(files).forEach(file => {
+                selectedFiles.push(file);
             });
 
-            if (response.ok) {
-                alert('تم رفع الصور وتصنيفها بنجاح!');
-                window.location.href = '/gallery';
-            } else {
-                const errorData = await response.json();
-                alert(`حدث خطأ أثناء الرفع: ${errorData.error}`);
+            // Render the previews for all selected files
+            renderPreviews();
+
+            // Clear the file input value so the same file can be selected again if needed
+            imagesToUploadInput.value = '';
+        });
+
+        uploadForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            if (selectedFiles.length === 0) {
+                alert('الرجاء اختيار صورة واحدة على الأقل');
+                return;
             }
-        } catch (error) {
-            console.error('Fetch error:', error);
-            alert(`حدث خطأ غير متوقع: ${error.message}`);
-        } finally {
-            submitButton.disabled = false;
-            submitButton.innerHTML = '<i class="fas fa-paper-plane"></i><span>رفع وتصنيف الصور</span>'; // Restore button text and icon
-        }
-    });
-  </script>
+
+            const selects = document.querySelectorAll('.waste-type-select');
+            let allSelected = true;
+            const wasteTypes = []; // Array to store waste types in the correct order
+
+            selects.forEach(select => {
+                if (!select.value) {
+                    select.classList.add('invalid'); // Add invalid class
+                    allSelected = false;
+                } else {
+                    select.classList.remove('invalid'); // Remove invalid class
+                    // Store the selected value. The order of selects should match the order of files
+                    wasteTypes.push(select.value);
+                }
+            });
+
+            if (!allSelected) {
+                alert('الرجاء تصنيف جميع الصور قبل الرفع'); // تحسين الرسالة
+                return;
+            }
+
+            // Disable the submit button
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin ml-2"></i><span>جاري الرفع...</span>'; // Add loading spinner
+
+            try {
+                const formData = new FormData();
+
+                // Append each file and its corresponding waste type to the FormData
+                selectedFiles.forEach((file, index) => {
+                    formData.append('imagesToUpload', file);
+                    // Use the waste type collected from the select elements
+                    formData.append('wasteTypes', wasteTypes[index]);
+                });
+
+
+                const response = await fetch(this.action, {
+                    method: this.method,
+                    body: formData
+                });
+
+                if (response.ok) {
+                    // Redirect to success page with a message including the number of files
+                    const successMessage = encodeURIComponent(`تم رفع وتصنيف ${selectedFiles.length} صور بنجاح!`);
+                    window.location.href = `/success?message=${successMessage}`;
+                } else {
+                    // Check if the response is JSON before parsing
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.indexOf("application/json") !== -1) {
+                        const errorData = await response.json();
+                        alert(`حدث خطأ أثناء الرفع: ${errorData.error || JSON.stringify(errorData)}`);
+                    } else {
+                        // Handle non-JSON responses (like HTML error pages)
+                        const errorText = await response.text();
+                        console.error('Server Error Response:', errorText); // Log the full response for debugging
+                        alert(`حدث خطأ غير متوقع أثناء الرفع. رمز الحالة: ${response.status}`);
+                    }
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                alert(`حدث خطأ غير متوقع: ${error.message}`);
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-paper-plane"></i><span>رفع وتصنيف الصور</span>'; // Restore button text and icon
+            }
+        });
+    </script>
 </body>
+
 </html>

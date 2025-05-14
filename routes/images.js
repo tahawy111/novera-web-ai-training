@@ -3,7 +3,7 @@ import multer from 'multer';
 import fs from 'fs'; // Keep for potential diskStorage cleanup (though memoryStorage is active)
 import path from 'path'; // Keep for potential diskStorage usage
 import sharp from 'sharp';
-import Image from '../models/Image.js';
+import Image from '../models/image.js';
 import imgurUploader from 'imgur-uploader';
 import axios from 'axios'; // Import axios for making HTTP requests
 
@@ -27,75 +27,74 @@ const IMGUR_CLIENT_ID = process.env.IMGUR_CLIENT_ID || 'YOUR_IMGUR_CLIENT_ID'; /
 // POST route for uploading images
 router.post('/upload', upload.array('imagesToUpload'), async (req, res, next) => {
   console.log(req.files);
-    if (!req.files || req.files.length === 0) {
-        return res.status(400).json({ error: 'لم يتم رفع أي ملفات.' });
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({ error: 'لم يتم رفع أي ملفات.' });
+  }
+
+  const wasteTypes = Array.isArray(req.body.wasteTypes) ? req.body.wasteTypes : [req.body.wasteTypes];
+
+  // No need to check length matching since we're handling it on the client side
+  try {
+    const uploadedImageDocs = [];
+    for (let i = 0; i < req.files.length; i++) {
+      const file = req.files[i];
+      const wasteType = wasteTypes[i];
+
+      if (!['paper', 'plastic', 'metal', 'mixed'].includes(wasteType)) {
+        console.warn(`Invalid waste type '${wasteType}' for file ${file.originalname}. Skipping.`);
+        continue;
+      }
+
+      // Process image using sharp
+      const processedImageBuffer = await sharp(file.buffer)
+        .resize(800, 600, { // Specify desired dimensions
+          fit: 'inside', // Maintain aspect ratio
+          withoutEnlargement: true // Avoid enlarging small images
+        })
+        .jpeg({
+          quality: 70,
+          mozjpeg: true
+        })
+        .toBuffer();
+
+      console.log(`Uploading ${file.originalname} to Imgur via imgur-uploader package...`);
+
+      // Use processed image for upload
+      const imgurResponse = await imgurUploader(processedImageBuffer, {
+        title: `Novera Waste - ${file.originalname}`,
+        description: `Waste type: ${wasteType}`,
+      });
+
+      // Check if upload was successful and link exists
+      if (!imgurResponse || !imgurResponse.link) {
+        console.error('Imgur Uploader Error:', imgurResponse);
+        throw new Error(
+          `Imgur upload failed for ${file.originalname}: ${imgurResponse?.error || 'Unknown imgur-uploader error'
+          }`
+        );
+      }
+
+      console.log('Imgur Upload Success:', imgurResponse.link);
+
+      const newImage = new Image({
+        filename: file.originalname,
+        imgurUrl: imgurResponse.link, // Use link from imgur-uploader response
+        imgurDeleteHash: imgurResponse.deletehash, // Use deletehash from imgur-uploader response
+        wasteType: wasteType,
+      });
+      const savedImage = await newImage.save();
+      uploadedImageDocs.push(savedImage);
     }
-
-    const wasteTypes = Array.isArray(req.body.wasteTypes) ? req.body.wasteTypes : [req.body.wasteTypes];
-
-    // No need to check length matching since we're handling it on the client side
-    try {
-        const uploadedImageDocs = [];
-        for (let i = 0; i < req.files.length; i++) {
-            const file = req.files[i];
-            const wasteType = wasteTypes[i];
-
-            if (!['paper', 'plastic', 'metal', 'mixed'].includes(wasteType)) {
-                console.warn(`Invalid waste type '${wasteType}' for file ${file.originalname}. Skipping.`);
-                continue;
-            }
-
-            // Process image using sharp
-            const processedImageBuffer = await sharp(file.buffer)
-                .resize(800, 600, { // Specify desired dimensions
-                    fit: 'inside', // Maintain aspect ratio
-                    withoutEnlargement: true // Avoid enlarging small images
-                })
-                .jpeg({ 
-                    quality: 70,
-                    mozjpeg: true
-                })
-                .toBuffer();
-
-            console.log(`Uploading ${file.originalname} to Imgur via imgur-uploader package...`);
-
-            // Use processed image for upload
-            const imgurResponse = await imgurUploader(processedImageBuffer, {
-                title: `Novera Waste - ${file.originalname}`,
-                description: `Waste type: ${wasteType}`,
-            });
-
-            // Check if upload was successful and link exists
-            if (!imgurResponse || !imgurResponse.link) {
-                console.error('Imgur Uploader Error:', imgurResponse);
-                throw new Error(
-                    `Imgur upload failed for ${file.originalname}: ${
-                        imgurResponse?.error || 'Unknown imgur-uploader error'
-                    }`
-                );
-            }
-
-            console.log('Imgur Upload Success:', imgurResponse.link);
-
-            const newImage = new Image({
-                filename: file.originalname,
-                imgurUrl: imgurResponse.link, // Use link from imgur-uploader response
-                imgurDeleteHash: imgurResponse.deletehash, // Use deletehash from imgur-uploader response
-                wasteType: wasteType,
-            });
-            const savedImage = await newImage.save();
-            uploadedImageDocs.push(savedImage);
-        }
-        // Change from json to render success.ejs
-        res.render('success', {
-            message: `تم رفع وتصنيف ${uploadedImageDocs.length} صور بنجاح!`,
-            currentPage: 'success' // Pass currentPage for header highlighting
-        });
-    } catch (error) {
-        console.error('Upload process error:', error);
-        // You might want to render an error page here too, or keep the JSON for API clients
-        res.status(500).json({ error: `خطأ في عملية الرفع: ${error.message}` });
-    }
+    // Change from json to render success.ejs
+    res.render('success', {
+      message: `تم رفع وتصنيف ${uploadedImageDocs.length} صور بنجاح!`,
+      currentPage: 'success' // Pass currentPage for header highlighting
+    });
+  } catch (error) {
+    console.error('Upload process error:', error);
+    // You might want to render an error page here too, or keep the JSON for API clients
+    res.status(500).json({ error: `خطأ في عملية الرفع: ${error.message}` });
+  }
 });
 
 // DELETE route for deleting an image by ID
@@ -124,7 +123,7 @@ router.delete('/:id', async (req, res, next) => {
         // Log the error but continue to delete from DB
       }
     } else {
-        console.warn(`No Imgur delete hash found for image ID: ${imageId}. Skipping Imgur deletion.`);
+      console.warn(`No Imgur delete hash found for image ID: ${imageId}. Skipping Imgur deletion.`);
     }
 
     // Delete from database
