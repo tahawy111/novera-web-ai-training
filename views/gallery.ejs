@@ -22,6 +22,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 1.5rem;
+      padding: 1rem;
     }
     .gallery-item {
       background-color: rgba(0, 95, 115, 0.3); /* --card-bg */
@@ -49,14 +50,55 @@
     .nav-links { margin-bottom: 2rem; text-align: center; }
     .nav-links a { margin: 0 10px; color: #94d2bd; text-decoration: none; }
     .nav-links a:hover, .nav-links a.active { color: #00b4d8; /* --accent */ }
+
+    /* أنماط للتصنيفات المختلفة */
+    details {
+        background: rgba(0, 95, 115, 0.1);
+        border-radius: 1rem;
+        padding: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    details[data-type="paper"] {
+        background: rgba(148, 210, 189, 0.1);
+        border-left: 4px solid #94d2bd;
+    }
+
+    details[data-type="plastic"] {
+        background: rgba(0, 180, 216, 0.1);
+        border-left: 4px solid #00b4d8;
+    }
+
+    details[data-type="metal"] {
+        background: rgba(202, 240, 248, 0.1);
+        border-left: 4px solid #caf0f8;
+    }
+
+    details[data-type="mixed"] {
+        background: rgba(0, 150, 199, 0.1);
+        border-left: 4px solid #0096c7;
+    }
+
+    details summary {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    details summary:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
   </style>
 </head>
 <body>
-  <header style="position: fixed; top: 0; left: 0; right: 0; background-color: rgba(0, 18, 25, 0.9); padding: 1rem; z-index: 50; text-align: center;">
-     <nav class="nav-links">
+  <header style="position: fixed; top: 0; left: 0; right: 0; background-color: rgba(0, 18, 25, 0.9); padding: 1rem; z-index: 50;">
+    <div style="display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
+      <img src="/logo.png" alt="Novera Logo" style="height: 40px; width: auto;">
+      <nav class="nav-links" style="margin: 0;">
         <a href="/upload" class="<%= currentPage === 'upload' ? 'active' : '' %>">رفع صور</a>
         <a href="/gallery" class="<%= currentPage === 'gallery' ? 'active' : '' %>">المعرض</a>
-    </nav>
+      </nav>
+    </div>
   </header>
 
   <div class="container">
@@ -83,9 +125,10 @@
       %>
 
       <% Object.keys(groupedImages).forEach(type => { %>
-        <details class="mb-8">
+        <details class="mb-8" data-type="<%= type %>">
           <summary class="text-xl font-bold mb-4 cursor-pointer" style="color: #e9f5f9;">
             <%= typeNames[type] || type %>
+            <span class="text-sm opacity-70">(<%= groupedImages[type].length %> صور)</span>
           </summary>
           <div class="gallery-grid mt-4">
             <% groupedImages[type].forEach(image => { %>

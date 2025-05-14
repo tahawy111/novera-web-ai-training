@@ -49,12 +49,23 @@
         width: 100%;
         margin-bottom: 1rem;
     }
-    .image-preview-container { margin-top: 1.5rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
+    .image-preview-container {
+        margin-top: 1.5rem;
+        display: flex;
+        flex-direction: column; /* جعل العناصر تظهر في عمود */
+    }
+    .images-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+        width: 100%;
+    }
     .image-preview-item {
       border: 1px solid #005f73; /* --border-color */
       padding: 0.5rem;
       border-radius: 0.5rem;
       text-align: center;
+      position: relative; /* لوضع زر X بشكل صحيح */
     }
     .image-preview-item img { max-width: 100%; height: 100px; object-fit: cover; margin-bottom: 0.5rem; border-radius: 0.25rem;}
     .image-preview-item select { font-size: 0.9rem; padding: 0.5rem; margin-top: 0.5rem; }
@@ -72,6 +83,30 @@
         transform: translateY(0);
     }
 
+    .remove-image {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #00b4d8;
+        color: #001219;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-weight: bold;
+        border: 2px solid #001219;
+        transition: all 0.2s ease;
+    }
+
+    .remove-image:hover {
+        transform: scale(1.1);
+        background: #ef4444;
+        color: white;
+    }
+
     .waste-type-select {
         width: 100%;
         padding: 0.5rem;
@@ -80,20 +115,39 @@
         border: 1px solid rgba(255, 255, 255, 0.2);
         color: #e9f5f9;
         transition: all 0.3s ease;
+        background: rgba(0, 95, 115, 0.3);
+        border: 1px solid rgba(148, 210, 189, 0.3);
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+
+    .waste-type-select:hover {
+        border-color: #94d2bd;
     }
 
     .waste-type-select:focus {
         border-color: #00b4d8;
+        box-shadow: 0 0 0 2px rgba(0, 180, 216, 0.2);
         outline: none;
+    }
+
+    .waste-type-select option {
+        background-color: #001219;
+        color: #e9f5f9;
     }
   </style>
 </head>
 <body>
-  <header style="position: fixed; top: 0; left: 0; right: 0; background-color: rgba(0, 18, 25, 0.9); padding: 1rem; z-index: 50; text-align: center;">
-     <nav class="nav-links">
+  <header style="position: fixed; top: 0; left: 0; right: 0; background-color: rgba(0, 18, 25, 0.9); padding: 1rem; z-index: 50;">
+    <div style="display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
+      <img src="/logo.png" alt="Novera Logo" style="height: 40px; width: auto;">
+      <nav class="nav-links" style="margin: 0;">
         <a href="/upload" class="<%= currentPage === 'upload' ? 'active' : '' %>">رفع صور</a>
         <a href="/gallery" class="<%= currentPage === 'gallery' ? 'active' : '' %>">المعرض</a>
-    </nav>
+      </nav>
+    </div>
   </header>
 
   <div class="container">
@@ -147,17 +201,38 @@
         counterDiv.innerHTML = `<p class="text-[#94d2bd]">تم اختيار ${files.length} صور</p>`;
         imagePreviewContainer.appendChild(counterDiv);
 
+        // Create grid container for images
+        const gridContainer = document.createElement('div');
+        gridContainer.classList.add('images-grid');
+        imagePreviewContainer.appendChild(gridContainer);
+
         Array.from(files).forEach((file, index) => {
             const reader = new FileReader();
             reader.onload = function(e) {
                 const previewItem = document.createElement('div');
                 previewItem.classList.add('image-preview-item');
 
-                // Add file name
-                const fileName = document.createElement('p');
-                fileName.textContent = file.name;
-                fileName.classList.add('text-sm', 'mb-2', 'text-[#94d2bd]');
-                previewItem.appendChild(fileName);
+                // إضافة زر X
+                const removeButton = document.createElement('div');
+                removeButton.classList.add('remove-image');
+                removeButton.innerHTML = '×';
+                removeButton.onclick = function() {
+                    previewItem.classList.remove('fade-in');
+                    setTimeout(() => {
+                        previewItem.remove();
+                        // تحديث عداد الصور
+                        const remainingImages = document.querySelectorAll('.image-preview-item').length;
+                        const counterDiv = document.querySelector('#imagePreviewContainer > div');
+                        if (counterDiv) {
+                            counterDiv.innerHTML = `<p class="text-[#94d2bd]">تم اختيار ${remainingImages} صور</p>`;
+                        }
+                        // إذا لم تتبق أي صور، امسح المحتوى بالكامل
+                        if (remainingImages === 0) {
+                            imagePreviewContainer.innerHTML = '';
+                        }
+                    }, 300);
+                };
+                previewItem.appendChild(removeButton);
 
                 const img = document.createElement('img');
                 img.src = e.target.result;
@@ -191,7 +266,9 @@
                 });
 
                 previewItem.appendChild(select);
-                imagePreviewContainer.appendChild(previewItem);
+                
+                // Append to gridContainer instead of imagePreviewContainer
+                gridContainer.appendChild(previewItem);
 
                 // Add animation class
                 setTimeout(() => previewItem.classList.add('fade-in'), 0);
