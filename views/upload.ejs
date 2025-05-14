@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="theme-ocean-night"> <!-- Or dynamically set theme -->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>رفع صور النفايات - Novera</title>
+  <link rel="icon" href="/logo.png"> <!-- Assuming logo.png is in public/ -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    /* Basic styling to match userdash.ejs somewhat - you'd ideally share CSS */
+    body {
+      font-family: 'Alexandria', sans-serif;
+      background-color: #001219; /* from theme-ocean-night --bg-primary */
+      color: #e9f5f9; /* from theme-ocean-night --text-primary */
+      padding-top: 80px; /* Space for a fixed navbar if you add one */
+    }
+    .container { margin: 0 auto; padding: 1rem 2rem; max-width: 900px; }
+    .card-glass {
+      background-color: rgba(0, 95, 115, 0.3); /* --card-bg */
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem; /* rounded-xl */
+      padding: 1.5rem; /* p-6 */
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); /* shadow-lg */
+    }
+    .btn-gradient {
+      background-image: linear-gradient(90deg, #00b4d8, #94d2bd); /* --gradient-start, --gradient-end */
+      color: #001219; /* --bg-primary for text color on gradient */
+      border: none;
+      padding: 0.5rem 1.5rem;
+      border-radius: 9999px; /* rounded-full */
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-gradient:hover {
+      transform: scale(1.05) translateY(-2px);
+    }
+    label { display: block; margin-bottom: 0.5rem; color: #94d2bd; /* --text-secondary */ }
+    input[type="file"], select {
+        background-color: rgba(255, 255, 255, 0.1); /* --input-bg */
+        border: 1px solid rgba(255, 255, 255, 0.2); /* --input-border */
+        color: #e9f5f9; /* --input-text */
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+    .image-preview-container { margin-top: 1.5rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
+    .image-preview-item {
+      border: 1px solid #005f73; /* --border-color */
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      text-align: center;
+    }
+    .image-preview-item img { max-width: 100%; height: 100px; object-fit: cover; margin-bottom: 0.5rem; border-radius: 0.25rem;}
+    .image-preview-item select { font-size: 0.9rem; padding: 0.5rem; margin-top: 0.5rem; }
+    .nav-links { margin-bottom: 2rem; text-align: center; }
+    .nav-links a { margin: 0 10px; color: #94d2bd; text-decoration: none; }
+    .nav-links a:hover, .nav-links a.active { color: #00b4d8; /* --accent */ }
+  </style>
+</head>
+<body>
+  <header style="position: fixed; top: 0; left: 0; right: 0; background-color: rgba(0, 18, 25, 0.9); padding: 1rem; z-index: 50; text-align: center;">
+     <nav class="nav-links">
+        <a href="/" class="<%= currentPage === 'dashboard' ? 'active' : '' %>">لوحة التحكم</a>
+        <a href="/upload" class="<%= currentPage === 'upload' ? 'active' : '' %>">رفع صور</a>
+        <a href="/gallery" class="<%= currentPage === 'gallery' ? 'active' : '' %>">المعرض</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="card-glass">
+      <h1 class="text-2xl font-bold mb-6 text-center" style="color: #e9f5f9;">رفع صور المخلفات</h1>
+      <form action="/images/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
+        <div>
+          <label for="imagesToUpload">اختر الصور (يمكن تحديد أكثر من صورة):</label>
+          <input type="file" id="imagesToUpload" name="imagesToUpload" multiple accept="image/*" required>
+        </div>
+
+        <div id="imagePreviewContainer" class="image-preview-container">
+          <!-- Image previews and type selectors will be injected here by JS -->
+        </div>
+
+        <button type="submit" class="btn-gradient mt-6 w-full">رفع وتصنيف الصور</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const imagesToUploadInput = document.getElementById('imagesToUpload');
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+    const uploadForm = document.getElementById('uploadForm');
+
+    imagesToUploadInput.addEventListener('change', function(event) {
+      imagePreviewContainer.innerHTML = ''; // Clear existing previews
+      const files = event.target.files;
+
+      if (files.length === 0) return;
+
+      Array.from(files).forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const previewItem = document.createElement('div');
+          previewItem.classList.add('image-preview-item');
+
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          previewItem.appendChild(img);
+
+          const selectLabel = document.createElement('label');
+          selectLabel.textContent = `نوع الصورة ${index + 1}:`;
+          selectLabel.htmlFor = `wasteType_${index}`;
+          previewItem.appendChild(selectLabel);
+
+          const select = document.createElement('select');
+          select.name = 'wasteTypes'; // All selects will have the same name to form an array
+          select.id = `wasteType_${index}`;
+          select.required = true;
+
+          const options = [
+            { value: "", text: "اختر النوع..." },
+            { value: "paper", text: "ورق" },
+            { value: "plastic", text: "بلاستيك" },
+            { value: "metal", text: "معدن" },
+            { value: "mixed", text: "مختلط" }
+          ];
+
+          options.forEach(opt => {
+            const optionElement = document.createElement('option');
+            optionElement.value = opt.value;
+            optionElement.textContent = opt.text;
+            if (opt.value === "") optionElement.disabled = true; // Make "اختر النوع" not selectable
+            select.appendChild(optionElement);
+          });
+          select.value = ""; // Set initial value to the disabled option
+
+          previewItem.appendChild(select);
+          imagePreviewContainer.appendChild(previewItem);
+        }
+        reader.readAsDataURL(file);
+      });
+    });
+
+    uploadForm.addEventListener('submit', function(event) {
+        const selects = imagePreviewContainer.querySelectorAll('select[name="wasteTypes"]');
+        let allSelected = true;
+        selects.forEach(select => {
+            if (!select.value) {
+                allSelected = false;
+            }
+        });
+
+        if (!allSelected) {
+            event.preventDefault(); // Prevent form submission
+            alert('الرجاء تحديد نوع لكل صورة قبل الرفع.');
+        }
+        // The backend will also validate this
+    });
+  </script>
+</body>
+</html>

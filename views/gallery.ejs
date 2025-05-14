@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="theme-ocean-night"> <!-- Or dynamically set theme -->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>معرض الصور - Novera</title>
+  <link rel="icon" href="/logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+   <style>
+    body {
+      font-family: 'Alexandria', sans-serif;
+      background-color: #001219;
+      color: #e9f5f9;
+      padding-top: 80px;
+    }
+    .container { margin: 0 auto; padding: 1rem 2rem; max-width: 1200px; }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+    .gallery-item {
+      background-color: rgba(0, 95, 115, 0.3); /* --card-bg */
+      border: 1px solid #005f73; /* --border-color */
+      border-radius: 0.75rem;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .gallery-item p {
+      color: #94d2bd; /* --text-secondary */
+      font-size: 0.9rem;
+    }
+    .gallery-item .type {
+      color: #e9f5f9; /* --text-primary */
+      font-weight: bold;
+    }
+    .nav-links { margin-bottom: 2rem; text-align: center; }
+    .nav-links a { margin: 0 10px; color: #94d2bd; text-decoration: none; }
+    .nav-links a:hover, .nav-links a.active { color: #00b4d8; /* --accent */ }
+  </style>
+</head>
+<body>
+  <header style="position: fixed; top: 0; left: 0; right: 0; background-color: rgba(0, 18, 25, 0.9); padding: 1rem; z-index: 50; text-align: center;">
+     <nav class="nav-links">
+        <a href="/" class="<%= currentPage === 'dashboard' ? 'active' : '' %>">لوحة التحكم</a>
+        <a href="/upload" class="<%= currentPage === 'upload' ? 'active' : '' %>">رفع صور</a>
+        <a href="/gallery" class="<%= currentPage === 'gallery' ? 'active' : '' %>">المعرض</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <h1 class="text-3xl font-bold mb-8 text-center" style="color: #e9f5f9;">معرض الصور المصنفة</h1>
+
+    <% if (images && images.length > 0) { %>
+      <%
+        const groupedImages = images.reduce((acc, image) => {
+          const type = image.wasteType || 'unknown'; // Handle potential missing type
+          if (!acc[type]) {
+            acc[type] = [];
+          }
+          acc[type].push(image);
+          return acc;
+        }, {});
+
+        const typeNames = {
+          'paper': 'ورق',
+          'plastic': 'بلاستيك',
+          'metal': 'معدن',
+          'mixed': 'مختلط',
+          'unknown': 'غير مصنف' // Handle unknown type
+        };
+      %>
+
+      <% Object.keys(groupedImages).forEach(type => { %>
+        <details open class="mb-8"> <%# Initially expanded %>
+          <summary class="text-xl font-bold mb-4 cursor-pointer" style="color: #e9f5f9;">
+            <%= typeNames[type] || type %>
+          </summary>
+          <div class="gallery-grid mt-4">
+            <% groupedImages[type].forEach(image => { %>
+              <div class="gallery-item">
+                <img 
+                  src="<%= image.imgurUrl %>" 
+                  alt="Uploaded Waste Image - <%= image.wasteType %>"
+                >
+                <p>النوع: <span class="type">
+                  <%= typeNames[image.wasteType] || image.wasteType %>
+                </span></p>
+                <p style="font-size: 0.8rem; opacity: 0.7;">
+                  تاريخ الرفع: <%= (new Date(image.uploadedAt)).toLocaleString('ar-EG') %>
+                </p>
+              </div>
+            <% }); %>
+          </div>
+        </details>
+      <% }); %>
+    <% } else { %>
+      <p class="text-center text-xl" style="color: #94d2bd;">لم يتم رفع أي صور بعد. <a href="/upload" style="color: #00b4d8;">قم برفع بعض الصور الآن!</a></p>
+    <% } %>
+  </div>
+</body>
+</html>
