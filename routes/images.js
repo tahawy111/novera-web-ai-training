@@ -13,7 +13,23 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const idsDataPath = path.join(__dirname, 'ids.json');
-const idsData = JSON.parse(fs.readFileSync(idsDataPath, 'utf-8'));
+let idsData = [];
+
+try {
+  if (fs.existsSync(idsDataPath)) {
+    const fileContent = fs.readFileSync(idsDataPath, 'utf-8');
+    if (fileContent) {
+      idsData = JSON.parse(fileContent);
+    }
+  } else {
+    console.error('ids.json file not found at:', idsDataPath);
+    // Create empty file if it doesn't exist
+    fs.writeFileSync(idsDataPath, '[]', 'utf-8');
+  }
+} catch (error) {
+  console.error('Error reading ids.json:', error);
+  idsData = []; // Fallback to empty array
+}
 
 const router = express.Router();
 
@@ -32,7 +48,10 @@ router.post('/upload', upload.array('imagesToUpload'), async (req, res, next) =>
   }
 
   // Find the user in idsData based on academicId
-  const user = idsData.find(user => user.id.toString() === academicId);
+  const user = idsData.find(user => {
+    if (!user || !user.id) return false;
+    return user.id.toString() === academicId.toString();
+  });
 
   if (!user) {
     return res.status(400).json({ error: 'الرقم الأكاديمي غير موجود.' });
