@@ -5,33 +5,44 @@ import path from 'path'; // Keep for potential diskStorage usage
 import sharp from 'sharp';
 import Image from '../models/image.js';
 import imgurUploader from 'imgur-uploader';
-import axios from 'axios'; // Import axios for making HTTP requests
+import axios from 'axios';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const idsDataPath = path.join(__dirname, 'ids.json');
+const idsData = JSON.parse(fs.readFileSync(idsDataPath, 'utf-8'));
 
 const router = express.Router();
 
-// Multer setup for handling file uploads (remains the same)
 const storage = multer.memoryStorage();
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, 'uploads/')
-//   },
-//   filename: function (req, file, cb) {
-//     cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
-//   }
-// });
 const upload = multer({ storage: storage });
 
-// Add Imgur Client ID (should be from config/env variables for security)
-const IMGUR_CLIENT_ID = process.env.IMGUR_CLIENT_ID || 'YOUR_IMGUR_CLIENT_ID'; // Replace with your actual Imgur Client ID or use environment variables
-
-// POST route for uploading images
+const IMGUR_CLIENT_ID = process.env.IMGUR_CLIENT_ID;
 router.post('/upload', upload.array('imagesToUpload'), async (req, res, next) => {
   console.log(req.files);
+
+  const academicId = req.body.academicId;
+  const wasteTypes = Array.isArray(req.body.wasteTypes) ? req.body.wasteTypes : [req.body.wasteTypes];
+
+  if (!academicId) {
+    return res.status(400).json({ error: 'الرقم الأكاديمي مطلوب.' });
+  }
+
+  // Find the user in idsData based on academicId
+  const user = idsData.find(user => user.id.toString() === academicId);
+
+  if (!user) {
+    return res.status(400).json({ error: 'الرقم الأكاديمي غير موجود.' });
+  }
+
+  const uploaderName = user.name; // Get the name from the found user
+
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ error: 'لم يتم رفع أي ملفات.' });
   }
-
-  const wasteTypes = Array.isArray(req.body.wasteTypes) ? req.body.wasteTypes : [req.body.wasteTypes];
 
   // No need to check length matching since we're handling it on the client side
   try {
@@ -42,7 +53,7 @@ router.post('/upload', upload.array('imagesToUpload'), async (req, res, next) =>
 
       if (!['paper', 'plastic', 'metal', 'mixed'].includes(wasteType)) {
         console.warn(`Invalid waste type '${wasteType}' for file ${file.originalname}. Skipping.`);
-        continue;
+        continue; // Skip this file if waste type is invalid
       }
 
       // Process image using sharp
@@ -62,7 +73,7 @@ router.post('/upload', upload.array('imagesToUpload'), async (req, res, next) =>
       // Use processed image for upload
       const imgurResponse = await imgurUploader(processedImageBuffer, {
         title: `Novera Waste - ${file.originalname}`,
-        description: `Waste type: ${wasteType}`,
+        description: `Waste type: ${wasteType}, Uploader: ${uploaderName}`, // Add uploader name to description
       });
 
       // Check if upload was successful and link exists
@@ -81,13 +92,20 @@ router.post('/upload', upload.array('imagesToUpload'), async (req, res, next) =>
         imgurUrl: imgurResponse.link, // Use link from imgur-uploader response
         imgurDeleteHash: imgurResponse.deletehash, // Use deletehash from imgur-uploader response
         wasteType: wasteType,
+        academicId: academicId, // Save academic ID
+        uploaderName: uploaderName, // Save uploader name
       });
       const savedImage = await newImage.save();
       uploadedImageDocs.push(savedImage);
     }
+
+    if (uploadedImageDocs.length === 0) {
+      return res.status(400).json({ error: 'لم يتم رفع أي صور صالحة للتصنيف.' });
+    }
+
     // Change from json to render success.ejs
     res.render('success', {
-      message: `تم رفع وتصنيف ${uploadedImageDocs.length} صور بنجاح!`,
+      message: `تم رفع وتصنيف ${uploadedImageDocs.length} صور بنجاح بواسطة ${uploaderName}!`, // Include name in success message
       currentPage: 'success' // Pass currentPage for header highlighting
     });
   } catch (error) {

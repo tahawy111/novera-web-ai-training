@@ -96,7 +96,8 @@
         }
 
         input[type="file"],
-        select {
+        select,
+        input[type="text"] {
             background-color: rgba(255, 255, 255, 0.1);
             /* --input-bg */
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -111,7 +112,8 @@
         }
 
         input[type="file"]:focus,
-        select:focus {
+        select:focus,
+        input[type="text"]:focus {
             border-color: #00b4d8;
             box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.3);
             outline: none;
@@ -313,6 +315,14 @@
             /* Red shadow */
         }
 
+        /* Style for invalid input */
+        input[type="text"].invalid {
+            border-color: #ef4444;
+            /* Red border */
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3);
+            /* Red shadow */
+        }
+
         .counter-text {
             color: #94d2bd;
             font-size: 1rem;
@@ -341,6 +351,11 @@
         <div class="card-glass">
             <h1 class="text-2xl font-bold mb-8 text-center" style="color: #e9f5f9;">رفع صور المخلفات</h1>
             <form action="/images/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
+                <div class="mb-6">
+                    <label for="academicId" class="block text-lg mb-2">الرقم الأكاديمي:</label>
+                    <input type="text" id="academicId" name="academicId" required placeholder="أدخل رقمك الأكاديمي">
+                </div>
+
                 <div class="mb-6">
                     <label for="imagesToUpload" class="block text-lg mb-2">اختر الصور (يمكن تحديد أكثر من صورة):</label>
                     <div class="file-input-wrapper">
@@ -371,6 +386,7 @@
         const imagePreviewContainer = document.getElementById('imagePreviewContainer');
         const uploadForm = document.getElementById('uploadForm');
         const submitButton = uploadForm.querySelector('button[type="submit"]'); // Get the submit button
+        const academicIdInput = document.getElementById('academicId'); // Get the academic ID input
 
         let selectedFiles = []; // Array to hold all selected files
 
@@ -485,6 +501,18 @@
         uploadForm.addEventListener('submit', async function (event) {
             event.preventDefault();
 
+            const academicId = academicIdInput.value.trim(); // Get academic ID and trim whitespace
+
+            // Basic validation for academic ID
+            if (!academicId) {
+                alert('الرجاء إدخال الرقم الأكاديمي.');
+                academicIdInput.classList.add('invalid'); // Add invalid class
+                academicIdInput.focus();
+                return;
+            } else {
+                academicIdInput.classList.remove('invalid'); // Remove invalid class
+            }
+
             if (selectedFiles.length === 0) {
                 alert('الرجاء اختيار صورة واحدة على الأقل');
                 return;
@@ -517,13 +545,15 @@
             try {
                 const formData = new FormData();
 
+                // Append academic ID
+                formData.append('academicId', academicId);
+
                 // Append each file and its corresponding waste type to the FormData
                 selectedFiles.forEach((file, index) => {
                     formData.append('imagesToUpload', file);
                     // Use the waste type collected from the select elements
                     formData.append('wasteTypes', wasteTypes[index]);
                 });
-
 
                 const response = await fetch(this.action, {
                     method: this.method,

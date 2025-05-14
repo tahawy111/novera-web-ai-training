@@ -5,7 +5,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "clear && nodemon index.js"
+    "dev": "clear && nodemon index.js",
+    "vercel": "vercel dev",
+    "build": "vercel",
+    "publish": "vercel --prod"
   },
   "keywords": [],
   "author": "",
