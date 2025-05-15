@@ -4,8 +4,8 @@ import fs from 'fs'; // Keep for potential diskStorage cleanup (though memorySto
 import path from 'path'; // Keep for potential diskStorage usage
 import sharp from 'sharp';
 import Image from '../models/image.js';
-import imgurUploader from 'imgur-uploader';
 import axios from 'axios';
+import FormData from 'form-data'; // Import form-data for building multipart/form-data
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -36,8 +36,9 @@ const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-const IMGUR_CLIENT_ID = process.env.IMGUR_CLIENT_ID;
+
 router.post('/upload', upload.array('imagesToUpload'), async (req, res, next) => {
+  const IMGBB_API_KEY = process.env.IMGBB_API_KEY; // Added imgbb API key
   console.log(req.files);
 
   const academicId = req.body.academicId;
@@ -87,29 +88,37 @@ router.post('/upload', upload.array('imagesToUpload'), async (req, res, next) =>
         })
         .toBuffer();
 
-      console.log(`Uploading ${file.originalname} to Imgur via imgur-uploader package...`);
+      console.log(`Uploading ${file.originalname} to imgbb...`);
 
       // Use processed image for upload
-      const imgurResponse = await imgurUploader(processedImageBuffer, {
-        title: `Novera Waste - ${file.originalname}`,
-        description: `Waste type: ${wasteType}, Uploader: ${uploaderName}`, // Add uploader name to description
+      // Build form data for imgbb upload
+      const formData = new FormData();
+      formData.append('image', processedImageBuffer, { filename: file.originalname });
+      // imgbb API key is passed as a query parameter
+      const imgbbUploadUrl = `https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`;
+
+      const imgbbResponse = await axios.post(imgbbUploadUrl, formData, {
+        headers: {
+          ...formData.getHeaders(), // Include form-data headers
+        },
       });
 
-      // Check if upload was successful and link exists
-      if (!imgurResponse || !imgurResponse.link) {
-        console.error('Imgur Uploader Error:', imgurResponse);
+      // Check if upload was successful and link exists based on imgbb response structure
+      if (!imgbbResponse.data || !imgbbResponse.data.success || !imgbbResponse.data.data || !imgbbResponse.data.data.url) {
+        console.error('imgbb Upload Error:', imgbbResponse.data);
         throw new Error(
-          `Imgur upload failed for ${file.originalname}: ${imgurResponse?.error || 'Unknown imgur-uploader error'
+          `imgbb upload failed for ${file.originalname}: ${imgbbResponse.data?.error?.message || 'Unknown imgbb error'
           }`
         );
       }
 
-      console.log('Imgur Upload Success:', imgurResponse.link);
+      const imgbbData = imgbbResponse.data.data;
+      console.log('imgbb Upload Success:', imgbbData.url);
 
       const newImage = new Image({
         filename: file.originalname,
-        imgurUrl: imgurResponse.link, // Use link from imgur-uploader response
-        imgurDeleteHash: imgurResponse.deletehash, // Use deletehash from imgur-uploader response
+        imgurUrl: imgbbData.url, // Store imgbb URL in imgurUrl field (or rename field if preferred)
+        imgurDeleteHash: imgbbData.delete_url, // Store imgbb delete URL in imgurDeleteHash field (or rename field)
         wasteType: wasteType,
         academicId: academicId, // Save academic ID
         uploaderName: uploaderName, // Save uploader name
@@ -146,21 +155,18 @@ router.delete('/:id', async (req, res, next) => {
       return next(err);
     }
 
-    // Delete from Imgur using the delete hash
+    // Delete from imgbb using the delete URL
+    // Assuming imgurDeleteHash now stores the imgbb delete_url
     if (image.imgurDeleteHash) {
       try {
-        await axios.delete(`https://api.imgur.com/3/image/${image.imgurDeleteHash}`, {
-          headers: {
-            'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`
-          }
-        });
-        console.log(`Deleted image from Imgur with hash: ${image.imgurDeleteHash}`);
-      } catch (imgurError) {
-        console.error(`Failed to delete image from Imgur with hash ${image.imgurDeleteHash}:`, imgurError.response?.data || imgurError.message);
+        await axios.get(image.imgurDeleteHash); // Using GET based on the provided delete_url format
+        console.log(`Deleted image from imgbb using URL: ${image.imgurDeleteHash}`);
+      } catch (imgbbError) {
+        console.error(`Failed to delete image from imgbb using URL ${image.imgurDeleteHash}:`, imgbbError.response?.data || imgbbError.message);
         // Log the error but continue to delete from DB
       }
     } else {
-      console.warn(`No Imgur delete hash found for image ID: ${imageId}. Skipping Imgur deletion.`);
+      console.warn(`No imgbb delete URL found for image ID: ${imageId}. Skipping imgbb deletion.`);
     }
 
     // Delete from database
