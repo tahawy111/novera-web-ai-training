@@ -329,6 +329,82 @@
             margin-bottom: 1rem;
             text-align: center;
         }
+
+        /* Utility class for hiding elements */
+        .hidden {
+            display: none;
+        }
+
+        /* Custom Checkbox Styling */
+        .custom-checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            /* Prevent text selection */
+        }
+
+        .custom-checkbox-wrapper input[type="checkbox"] {
+            /* Hide the default checkbox */
+            position: absolute;
+            opacity: 0;
+            height: 0;
+            width: 0;
+            /* Use peer for Tailwind styling */
+            @apply peer;
+        }
+
+        .custom-checkbox-indicator {
+            /* The visual indicator */
+            height: 1.5rem;
+            width: 1.5rem;
+            border: 2px solid #94d2bd;
+            /* Border color */
+            border-radius: 0.375rem;
+            /* rounded-md */
+            margin-left: 0.5rem;
+            /* Space between indicator and text */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            background-color: rgba(148, 210, 189, 0.1);
+            /* Subtle background */
+        }
+
+        .custom-checkbox-indicator i {
+            /* Checkmark icon */
+            color: #001219;
+            /* Icon color (should contrast with checked background) */
+            font-size: 1rem;
+            opacity: 0;
+            /* Hide by default */
+            transition: opacity 0.2s ease;
+        }
+
+        /* Style the indicator when the peer checkbox is checked */
+        .custom-checkbox-wrapper input[type="checkbox"]:checked+.custom-checkbox-indicator {
+            background-color: #94d2bd;
+            /* Background when checked */
+            border-color: #94d2bd;
+            /* Border when checked */
+        }
+
+        .custom-checkbox-wrapper input[type="checkbox"]:checked+.custom-checkbox-indicator i {
+            opacity: 1;
+            /* Show checkmark when checked */
+        }
+
+        .custom-checkbox-wrapper:hover .custom-checkbox-indicator {
+            border-color: #00b4d8;
+            /* Hover effect on border */
+        }
+
+        .custom-checkbox-wrapper input[type="checkbox"]:focus+.custom-checkbox-indicator {
+            box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.3);
+            /* Focus ring */
+            outline: none;
+        }
     </style>
 </head>
 
@@ -372,6 +448,29 @@
                     <!-- Image previews will be injected here -->
                 </div>
 
+                <!-- New checkbox and "Apply to All" section -->
+                <div class="mt-6 mb-4">
+                    <label for="applyToAllCheckbox" class="custom-checkbox-wrapper">
+                        <input type="checkbox" id="applyToAllCheckbox">
+                        <span class="custom-checkbox-indicator">
+                            <i class="fas fa-check"></i>
+                        </span>
+                        <span class="inline-block text-lg cursor-pointer">تطبيق التصنيف على جميع الصور</span>
+                    </label>
+                </div>
+
+
+                <div id="applyToAllSelectContainer" class="mb-6 hidden">
+                    <label for="allWasteType" class="block text-lg mb-2">تصنيف لجميع الصور:</label>
+                    <select id="allWasteType" class="waste-type-select">
+                        <option value="" disabled selected>اختر النوع...</option>
+                        <option value="paper">ورق</option>
+                        <option value="plastic">بلاستيك</option>
+                        <option value="metal">معدن</option>
+                        <option value="mixed">مختلط</option>
+                    </select>
+                </div>
+
                 <button type="submit"
                     class="btn-gradient mt-8 w-full text-lg py-3 transition-transform hover:scale-105">
                     <i class="fas fa-paper-plane"></i>
@@ -387,17 +486,46 @@
         const uploadForm = document.getElementById('uploadForm');
         const submitButton = uploadForm.querySelector('button[type="submit"]'); // Get the submit button
         const academicIdInput = document.getElementById('academicId'); // Get the academic ID input
+        const applyToAllCheckbox = document.getElementById('applyToAllCheckbox'); // Get the new checkbox
+        const applyToAllSelectContainer = document.getElementById('applyToAllSelectContainer'); // Get the container for the "apply to all" select
+        const allWasteTypeSelect = document.getElementById('allWasteType'); // Get the "apply to all" select
 
         let selectedFiles = []; // Array to hold all selected files
+
+        // Function to toggle visibility of individual selects and the "apply to all" select
+        function toggleSelectVisibility() {
+            const isApplyToAllChecked = applyToAllCheckbox.checked;
+            applyToAllSelectContainer.classList.toggle('hidden', !isApplyToAllChecked); // Show if checked, hide if not
+
+            // Toggle visibility of individual selects and their labels in the preview
+            const previewItems = imagePreviewContainer.querySelectorAll('.image-preview-item');
+            previewItems.forEach(item => {
+                const itemSelect = item.querySelector('.waste-type-select');
+                const itemLabel = item.querySelector('label');
+                if (itemSelect && itemLabel) {
+                    itemSelect.classList.toggle('hidden', isApplyToAllChecked);
+                    itemLabel.classList.toggle('hidden', isApplyToAllChecked);
+                }
+            });
+        }
+
 
         // Function to render the image previews based on the selectedFiles array
         function renderPreviews() {
             imagePreviewContainer.innerHTML = ''; // Clear existing previews
 
             if (selectedFiles.length === 0) {
-                // Optionally hide the container or show a message if no files are selected
+                // Hide the apply to all checkbox and select if no files
+                applyToAllCheckbox.parentElement.classList.add('hidden');
+                applyToAllSelectContainer.classList.add('hidden');
                 return;
             }
+
+            // Show the apply to all checkbox if there are files
+            applyToAllCheckbox.parentElement.classList.remove('hidden');
+            // Ensure the correct select visibility is applied after rendering
+            toggleSelectVisibility();
+
 
             // Add counter for selected images
             const counterDiv = document.createElement('div');
@@ -429,6 +557,8 @@
                         if (selectedFiles.length === 0) {
                             imagesToUploadInput.value = '';
                         }
+                        // Re-apply select visibility after removing an item
+                        toggleSelectVisibility();
                     };
                     previewItem.appendChild(removeButton);
 
@@ -444,7 +574,7 @@
 
                     const select = document.createElement('select');
                     select.name = 'wasteTypes'; // Keep the name for form submission
-                    select.required = true;
+                    // Removed select.required = true; to allow JS validation based on checkbox
                     select.classList.add('waste-type-select');
                     // Store the index on the select element to link it back to the file
                     select.dataset.index = index;
@@ -478,6 +608,8 @@
                 }
                 reader.readAsDataURL(file);
             });
+            // Ensure the correct select visibility is applied after rendering all items
+            toggleSelectVisibility();
         }
 
 
@@ -497,6 +629,10 @@
             // Clear the file input value so the same file can be selected again if needed
             imagesToUploadInput.value = '';
         });
+
+        // Add event listener for the new checkbox
+        applyToAllCheckbox.addEventListener('change', toggleSelectVisibility);
+
 
         uploadForm.addEventListener('submit', async function (event) {
             event.preventDefault();
@@ -518,20 +654,36 @@
                 return;
             }
 
-            const selects = document.querySelectorAll('.waste-type-select');
+            let wasteTypes = []; // Array to store waste types in the correct order
             let allSelected = true;
-            const wasteTypes = []; // Array to store waste types in the correct order
 
-            selects.forEach(select => {
-                if (!select.value) {
-                    select.classList.add('invalid'); // Add invalid class
+            if (applyToAllCheckbox.checked) {
+                // If "apply to all" is checked, validate the single select
+                const singleWasteType = allWasteTypeSelect.value;
+                if (!singleWasteType) {
+                    alert('الرجاء اختيار تصنيف لجميع الصور.');
+                    allWasteTypeSelect.classList.add('invalid'); // Add invalid class
                     allSelected = false;
                 } else {
-                    select.classList.remove('invalid'); // Remove invalid class
-                    // Store the selected value. The order of selects should match the order of files
-                    wasteTypes.push(select.value);
+                    allWasteTypeSelect.classList.remove('invalid'); // Remove invalid class
+                    // Populate wasteTypes array with the single selected value for all files
+                    wasteTypes = Array(selectedFiles.length).fill(singleWasteType);
                 }
-            });
+            } else {
+                // If "apply to all" is not checked, validate individual selects
+                const individualSelects = imagePreviewContainer.querySelectorAll('.waste-type-select');
+                individualSelects.forEach(select => {
+                    if (!select.value) {
+                        select.classList.add('invalid'); // Add invalid class
+                        allSelected = false;
+                    } else {
+                        select.classList.remove('invalid'); // Remove invalid class
+                        // Store the selected value. The order of selects should match the order of files
+                        wasteTypes.push(select.value);
+                    }
+                });
+            }
+
 
             if (!allSelected) {
                 alert('الرجاء تصنيف جميع الصور قبل الرفع'); // تحسين الرسالة
@@ -551,7 +703,7 @@
                 // Append each file and its corresponding waste type to the FormData
                 selectedFiles.forEach((file, index) => {
                     formData.append('imagesToUpload', file);
-                    // Use the waste type collected from the select elements
+                    // Use the waste type collected from the wasteTypes array
                     formData.append('wasteTypes', wasteTypes[index]);
                 });
 
@@ -585,6 +737,12 @@
                 submitButton.innerHTML = '<i class="fas fa-paper-plane"></i><span>رفع وتصنيف الصور</span>'; // Restore button text and icon
             }
         });
+
+        // Initial call to hide the checkbox and apply-to-all select if no files are loaded initially
+        // This is important if the page is loaded without pre-selected files (which is the case here)
+        applyToAllCheckbox.parentElement.classList.add('hidden');
+        applyToAllSelectContainer.classList.add('hidden');
+
     </script>
 </body>
 
